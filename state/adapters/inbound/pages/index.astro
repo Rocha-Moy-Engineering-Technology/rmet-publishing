@@ -1,0 +1,28 @@
+---
+import '../styles/global.css';
+
+export const prerender = true;
+const mode = 'astro-static';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>rmet-publishing</title>
+  </head>
+  <body>
+    <main
+      class="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-4 px-6"
+    >
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">
+        {mode}
+      </p>
+      <h1 class="text-5xl font-bold tracking-tight">rmet-publishing</h1>
+      <p class="max-w-xl text-lg text-slate-300">
+        Astro 7.2 on Railway, with complete generated validation.
+      </p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+/node_modules
+/dist
+/.astro
+/coverage
+/playwright-report
+/test-results
+/tests/.features-gen
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
