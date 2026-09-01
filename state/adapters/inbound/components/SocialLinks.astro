@@ -1,0 +1,28 @@
+---
+import { SITE } from '../../../../logic/site/site_config';
+
+interface Props {
+  readonly showHandles?: boolean;
+}
+
+const { showHandles = false } = Astro.props;
+---
+
+<ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+  {
+    SITE.socialLinks.map((link) => (
+      <li>
+        <a
+          href={link.href}
+          data-testid={link.testId}
+          rel="me noopener"
+          target="_blank"
+          class="text-muted underline decoration-line underline-offset-4 transition hover:text-accent"
+        >
+          {link.label}
+          {showHandles && <span class="text-muted"> · {link.handle}</span>}
+        </a>
+      </li>
+    ))
+  }
+</ul>

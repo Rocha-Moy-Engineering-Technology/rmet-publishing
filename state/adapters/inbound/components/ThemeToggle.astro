@@ -1,0 +1,55 @@
+---
+
+---
+
+<button
+  type="button"
+  data-testid="theme-toggle"
+  aria-label="Switch between light and dark"
+  class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:text-ink"
+>
+  <span aria-hidden="true" class="hidden dark:inline">☾</span>
+  <span aria-hidden="true" class="inline dark:hidden">☀</span>
+</button>
+
+<script>
+  import { giscusThemeMessage } from '../../../../logic/comments/giscus_settings';
+  import type { CommentsTheme } from '../../../../types/comments';
+
+  (() => {
+    const STORAGE_KEY = 'rmet-theme';
+    const root = document.documentElement;
+
+    const apply = (theme: CommentsTheme): void => {
+      root.classList.toggle('dark', theme === 'dark');
+      root.dataset.theme = theme;
+      const frame = document.querySelector('iframe.giscus-frame');
+      if (frame instanceof HTMLIFrameElement && frame.contentWindow) {
+        frame.contentWindow.postMessage(
+          giscusThemeMessage(theme),
+          'https://giscus.app'
+        );
+      }
+    };
+
+    const store = (theme: CommentsTheme): void => {
+      try {
+        localStorage.setItem(STORAGE_KEY, theme);
+      } catch {
+        /* storage unavailable; the choice lasts for this page only */
+      }
+    };
+
+    for (const button of document.querySelectorAll(
+      '[data-testid="theme-toggle"]'
+    )) {
+      button.addEventListener('click', () => {
+        const next: CommentsTheme = root.classList.contains('dark')
+          ? 'light'
+          : 'dark';
+        apply(next);
+        store(next);
+      });
+    }
+  })();
+</script>

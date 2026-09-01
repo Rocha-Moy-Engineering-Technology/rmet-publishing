@@ -1,0 +1,112 @@
+---
+import { render } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Comments from '../../components/Comments.astro';
+import KindBadge from '../../components/KindBadge.astro';
+import PostMeta from '../../components/PostMeta.astro';
+import TagChips from '../../components/TagChips.astro';
+import { formatCitation } from '../../../../../logic/posts/citation';
+import { kindSegment } from '../../../../../logic/posts/post_kinds';
+import { absoluteUrl, postPath } from '../../../../../logic/posts/post_routes';
+import { SITE } from '../../../../../logic/site/site_config';
+import {
+  listPostDocuments,
+  type PostEntry,
+} from '../../../outbound/content/post_content_repository';
+import type { Post } from '../../../../../types/post';
+import { siteHref } from '../../site_links';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const documents = await listPostDocuments();
+  return documents.map(({ entry, post }) => ({
+    params: { kind: kindSegment(post.kind), slug: post.slug },
+    props: { entry, post },
+  }));
+}
+
+interface Props {
+  readonly entry: PostEntry;
+  readonly post: Post;
+}
+
+const { entry, post } = Astro.props;
+const { Content } = await render(entry);
+const siteUrl = Astro.site?.href ?? SITE.defaultSiteUrl;
+const canonical =
+  post.canonicalUrl ?? absoluteUrl(siteUrl, siteHref(postPath(post)));
+const citation = formatCitation(post, {
+  siteName: SITE.name,
+  url: canonical,
+  fallbackAuthor: SITE.author,
+});
+---
+
+<BaseLayout
+  title={post.title}
+  description={post.description}
+  canonicalUrl={canonical}
+>
+  <article class="mx-auto max-w-2xl">
+    <div class="flex flex-wrap items-center gap-3">
+      <KindBadge kind={post.kind} />
+      {
+        post.pdfUrl && (
+          <a
+            href={siteHref(post.pdfUrl)}
+            class="text-sm text-muted underline decoration-line underline-offset-4 transition hover:text-accent"
+          >
+            Portable Document Format (PDF)
+          </a>
+        )
+      }
+    </div>
+    <h1 class="mt-4 text-4xl font-semibold tracking-tight">{post.title}</h1>
+    <p class="mt-4 text-lg text-muted">{post.description}</p>
+    <div class="mt-4">
+      <PostMeta post={post} />
+    </div>
+    {
+      post.authors.length > 0 && (
+        <p class="mt-2 text-sm text-muted">{post.authors.join(', ')}</p>
+      )
+    }
+    {
+      post.abstract && (
+        <section class="mt-8 rounded-xl border border-line bg-raised p-6">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
+            Abstract
+          </h2>
+          <p class="mt-3 text-muted">{post.abstract}</p>
+        </section>
+      )
+    }
+
+    <div data-testid="post-body" class="prose mt-10">
+      <Content />
+    </div>
+
+    {
+      post.tags.length > 0 && (
+        <div class="mt-10">
+          <TagChips tags={post.tags} />
+        </div>
+      )
+    }
+
+    {
+      post.kind === 'paper' && (
+        <section class="mt-10 rounded-xl border border-line bg-raised p-6">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
+            Cite this paper
+          </h2>
+          <p class="mt-3 font-mono text-sm text-muted">{citation}</p>
+        </section>
+      )
+    }
+
+    <Comments term={`${kindSegment(post.kind)}/${post.slug}`} />
+  </article>
+</BaseLayout>

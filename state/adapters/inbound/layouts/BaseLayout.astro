@@ -1,0 +1,72 @@
+---
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { SITE } from '../../../../logic/site/site_config';
+import { absoluteUrl } from '../../../../logic/posts/post_routes';
+import { siteHref } from '../site_links';
+import '../styles/global.css';
+
+interface Props {
+  readonly title: string;
+  readonly description?: string;
+  readonly canonicalUrl?: string;
+}
+
+const { title, description = SITE.description, canonicalUrl } = Astro.props;
+const path = Astro.url.pathname;
+const siteUrl = Astro.site?.href ?? SITE.defaultSiteUrl;
+const canonical = canonicalUrl ?? absoluteUrl(siteUrl, path);
+const pageTitle = title === SITE.name ? title : `${title} · ${SITE.name}`;
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author} />
+    <link rel="canonical" href={canonical} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.name}
+      href={siteHref('/rss.xml')}
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        let stored = null;
+        try {
+          stored = localStorage.getItem('rmet-theme');
+        } catch {
+          stored = null;
+        }
+        const prefersDark =
+          typeof matchMedia === 'function' &&
+          matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored ?? (prefersDark ? 'dark' : 'light');
+        root.classList.toggle('dark', theme === 'dark');
+        root.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen bg-surface text-ink">
+    <a
+      href="#content"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-raised focus:px-3 focus:py-2"
+      >Skip to content</a
+    >
+    <SiteHeader path={path} />
+    <main id="content" class="mx-auto max-w-5xl px-6 py-14">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

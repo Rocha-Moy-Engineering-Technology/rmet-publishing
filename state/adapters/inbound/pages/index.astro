@@ -1,28 +1,71 @@
 ---
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import {
+  POST_KINDS,
+  kindDescription,
+  kindPlural,
+} from '../../../../logic/posts/post_kinds';
+import { kindPath } from '../../../../logic/posts/post_routes';
+import { latestPosts, postsOfKind } from '../../../../logic/posts/post_queries';
+import { SITE } from '../../../../logic/site/site_config';
+import { postRepository } from '../../outbound/content/post_content_repository';
+import { siteHref } from '../site_links';
 
 export const prerender = true;
-const mode = 'astro-static';
+
+const posts = await postRepository().listPosts();
+const recent = latestPosts(posts, 5);
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>rmet-publishing</title>
-  </head>
-  <body>
-    <main
-      class="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-4 px-6"
-    >
-      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">
-        {mode}
-      </p>
-      <h1 class="text-5xl font-bold tracking-tight">rmet-publishing</h1>
-      <p class="max-w-xl text-lg text-slate-300">
-        Astro 7.2 on Railway, with complete generated validation.
-      </p>
-    </main>
-  </body>
-</html>
+<BaseLayout title={SITE.name} description={SITE.description}>
+  <section class="max-w-2xl">
+    <p class="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
+      {SITE.author}
+    </p>
+    <h1 class="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
+      {SITE.tagline}
+    </h1>
+    <p class="mt-5 text-lg text-muted">{SITE.description}</p>
+    <div class="mt-7">
+      <SocialLinks showHandles />
+    </div>
+  </section>
+
+  <section class="mt-16 grid gap-5 sm:grid-cols-3">
+    {
+      POST_KINDS.map((kind) => (
+        <a
+          href={siteHref(kindPath(kind))}
+          class="rounded-xl border border-line bg-raised p-5 transition hover:border-accent"
+        >
+          <h2 class="text-lg font-semibold tracking-tight">
+            {kindPlural(kind)}
+          </h2>
+          <p class="mt-2 text-sm text-muted">{kindDescription(kind)}</p>
+          <p class="mt-4 text-sm text-muted">
+            {postsOfKind(posts, kind).length} published
+          </p>
+        </a>
+      ))
+    }
+  </section>
+
+  <section class="mt-16">
+    <div class="flex items-baseline justify-between gap-4">
+      <h2 class="text-2xl font-semibold tracking-tight">Latest</h2>
+      <a
+        href={siteHref('/writing')}
+        class="text-sm text-muted underline decoration-line underline-offset-4 transition hover:text-accent"
+        >All writing</a
+      >
+    </div>
+    <div class="mt-6">
+      <PostList
+        posts={recent}
+        emptyMessage="The first pieces are on their way."
+      />
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { collectTags } from '../../../../../logic/posts/post_queries';
+import { tagPath } from '../../../../../logic/posts/post_routes';
+import { postRepository } from '../../../outbound/content/post_content_repository';
+import { siteHref } from '../../site_links';
+
+export const prerender = true;
+
+const posts = await postRepository().listPosts();
+const tags = collectTags(posts);
+---
+
+<BaseLayout
+  title="Writing"
+  description="Every blog post, article, and paper published here, newest first."
+>
+  <header class="max-w-2xl">
+    <h1 class="text-4xl font-semibold tracking-tight">Writing</h1>
+    <p class="mt-4 text-lg text-muted">
+      Every blog post, article, and paper published here, newest first.
+    </p>
+  </header>
+
+  {
+    tags.length > 0 && (
+      <ul class="mt-8 flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <li>
+            <a
+              href={siteHref(tagPath(tag.slug))}
+              class="rounded-full border border-line px-3 py-1 text-sm text-muted transition hover:border-accent hover:text-accent"
+            >
+              {tag.tag} <span class="text-muted">({tag.count})</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <div class="mt-10">
+    <PostList posts={posts} />
+  </div>
+</BaseLayout>

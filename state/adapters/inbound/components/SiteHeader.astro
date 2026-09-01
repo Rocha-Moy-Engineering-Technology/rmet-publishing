@@ -1,0 +1,52 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { SITE } from '../../../../logic/site/site_config';
+import {
+  isActivePath,
+  navigationItems,
+} from '../../../../logic/site/navigation';
+import { siteHref, sitePath } from '../site_links';
+
+interface Props {
+  readonly path: string;
+}
+
+const { path } = Astro.props;
+const items = navigationItems();
+const current = sitePath(path);
+---
+
+<header class="border-b border-line">
+  <div
+    class="mx-auto flex max-w-5xl flex-wrap items-center gap-x-8 gap-y-4 px-6 py-5"
+  >
+    <a href={siteHref('/')} class="text-lg font-semibold tracking-tight"
+      >{SITE.name}</a
+    >
+    <nav aria-label="Main" class="flex-1">
+      <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={siteHref(item.href)}
+                aria-current={
+                  isActivePath(current, item.href) ? 'page' : undefined
+                }
+                class:list={[
+                  'transition hover:text-accent',
+                  isActivePath(current, item.href)
+                    ? 'text-accent font-semibold'
+                    : 'text-muted',
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <ThemeToggle />
+  </div>
+</header>

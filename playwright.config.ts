@@ -7,10 +7,17 @@ const bddTestDir = defineBddConfig({
   outputDir: 'tests/.features-gen',
 });
 
-const chrome = {
-  ...devices['Desktop Chrome'],
-  channel: 'chrome',
-};
+const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
+
+const chrome = executablePath
+  ? {
+      ...devices['Desktop Chrome'],
+      launchOptions: { executablePath },
+    }
+  : {
+      ...devices['Desktop Chrome'],
+      channel: 'chrome',
+    };
 
 export default defineConfig({
   fullyParallel: false,

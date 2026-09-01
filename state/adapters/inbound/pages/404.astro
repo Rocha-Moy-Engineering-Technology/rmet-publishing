@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteHref } from '../site_links';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Not found" description="That address does not exist here.">
+  <section class="max-w-2xl">
+    <p class="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
+      404
+    </p>
+    <h1 class="mt-4 text-4xl font-semibold tracking-tight">
+      That page is not here
+    </h1>
+    <p class="mt-4 text-lg text-muted">
+      The address may have changed, or the piece may never have existed.
+    </p>
+    <p class="mt-6">
+      <a
+        href={siteHref('/writing')}
+        class="underline decoration-line underline-offset-4 transition hover:text-accent"
+        >Browse everything published</a
+      >
+    </p>
+  </section>
+</BaseLayout>

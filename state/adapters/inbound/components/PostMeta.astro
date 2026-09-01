@@ -1,0 +1,26 @@
+---
+import { formatDate, toIsoDate } from '../../../../logic/text/format_date';
+import type { Post } from '../../../../types/post';
+
+interface Props {
+  readonly post: Post;
+}
+
+const { post } = Astro.props;
+---
+
+<p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+  <time datetime={toIsoDate(post.publishedAt)}
+    >{formatDate(post.publishedAt)}</time
+  >
+  <span aria-hidden="true">·</span>
+  <span>{post.readingMinutes} min read</span>
+  {
+    post.updatedAt && (
+      <>
+        <span aria-hidden="true">·</span>
+        <span>Updated {formatDate(post.updatedAt)}</span>
+      </>
+    )
+  }
+</p>

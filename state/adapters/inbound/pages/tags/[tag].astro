@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import {
+  collectTags,
+  postsWithTag,
+} from '../../../../../logic/posts/post_queries';
+import { postRepository } from '../../../outbound/content/post_content_repository';
+import type { Post } from '../../../../../types/post';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await postRepository().listPosts();
+  return collectTags(posts).map((tag) => ({
+    params: { tag: tag.slug },
+    props: { label: tag.tag, posts: postsWithTag(posts, tag.slug) },
+  }));
+}
+
+interface Props {
+  readonly label: string;
+  readonly posts: readonly Post[];
+}
+
+const { label, posts } = Astro.props;
+---
+
+<BaseLayout
+  title={`Tagged ${label}`}
+  description={`Everything published here about ${label}.`}
+>
+  <header class="max-w-2xl">
+    <p class="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
+      Tag
+    </p>
+    <h1 class="mt-3 text-4xl font-semibold tracking-tight">{label}</h1>
+  </header>
+  <div class="mt-10">
+    <PostList posts={posts} />
+  </div>
+</BaseLayout>

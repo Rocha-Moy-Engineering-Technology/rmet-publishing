@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import { splitEmail } from '../../../../logic/contact/contact_email';
+import { readSetting } from '../../../../logic/site/settings';
+import { SITE } from '../../../../logic/site/site_config';
+import { siteEnvironment } from '../../outbound/environment/site_environment';
+
+export const prerender = true;
+
+const environment = siteEnvironment().snapshot();
+const address =
+  readSetting(environment, 'PUBLIC_CONTACT_EMAIL') ?? SITE.defaultContactEmail;
+const parts = splitEmail(address);
+---
+
+<BaseLayout
+  title="Contact"
+  description="Ways to reach Pedro Henrique Rocha Moy."
+>
+  <header class="max-w-2xl">
+    <h1 class="text-4xl font-semibold tracking-tight">Get in touch</h1>
+    <p class="mt-4 text-lg text-muted">
+      Comments on any piece are welcome through GitHub Discussions. For anything
+      else, these routes reach me directly.
+    </p>
+  </header>
+
+  <section class="mt-10 max-w-2xl rounded-xl border border-line bg-raised p-6">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
+      Email
+    </h2>
+    {
+      parts ? (
+        <p class="mt-3 text-lg">
+          <a
+            data-testid="email-link"
+            href="#"
+            data-user={parts.user}
+            data-domain={parts.domain}
+            class="underline decoration-line underline-offset-4 transition hover:text-accent"
+          >
+            {parts.user} at {parts.domain}
+          </a>
+        </p>
+      ) : (
+        <p class="mt-3 text-muted" data-testid="email-link">
+          Set PUBLIC_CONTACT_EMAIL to publish an address here.
+        </p>
+      )
+    }
+    <p class="mt-3 text-sm text-muted">
+      The address is assembled in your browser, so it stays out of the page
+      source that scrapers read.
+    </p>
+  </section>
+
+  <section class="mt-8 max-w-2xl">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
+      Elsewhere
+    </h2>
+    <div class="mt-4">
+      <SocialLinks showHandles />
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { mailtoHref } from '../../../../logic/contact/contact_email';
+
+  const link = document.querySelector<HTMLAnchorElement>(
+    'a[data-testid="email-link"]'
+  );
+  const user = link?.dataset.user;
+  const domain = link?.dataset.domain;
+  if (link && user && domain) {
+    const address = `${user}@${domain}`;
+    link.href = mailtoHref(address, 'Hello from your site');
+    link.textContent = address;
+  }
+</script>
