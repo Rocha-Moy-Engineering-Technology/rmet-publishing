@@ -58,6 +58,25 @@ Every piece uses the same shape. A piece carrying an abstract, a Digital Object
 Identifier (DOI), or a Portable Document Format (PDF) link renders those extras;
 one without them renders as a plain piece.
 
+## Background video
+
+The landing page plays a video behind the content, fixed while you scroll and
+silent until you turn the sound on with the control in the corner. Screens
+narrower than 768 pixels never fetch the video; they cycle through still frames
+instead, with no sound control at all.
+
+The files go in `state/adapters/inbound/public/video/`:
+
+- `background.webm` and `background.mp4` — the same clip in both encodings
+- `background-poster.jpg` — the frame shown before playback starts
+- `background-still-1.webp` … `background-still-9.webp` — the frames a narrow
+  screen cycles through
+
+Any of them may be missing, and with none of them present the backdrop simply
+does not render. Join and encode the clips before they land here: the file is
+expected to loop seamlessly on its own, and its weight is paid on every visit.
+`docs/md/DEVELOPMENT.md` covers the rest.
+
 ## Development
 
 ```sh

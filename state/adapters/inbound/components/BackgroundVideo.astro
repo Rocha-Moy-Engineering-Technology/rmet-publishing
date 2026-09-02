@@ -5,78 +5,181 @@ import { siteHref } from '../site_links';
 const media = readBackgroundMedia();
 const poster = media.poster ? siteHref(media.poster) : undefined;
 const hasVideo = media.sources.length > 0;
+const hasStills = media.stills.length > 0;
+const players = [0, 1];
 ---
 
 {
-  hasVideo && (
+  (hasVideo || hasStills) && (
     <>
-      <div class="page-media" aria-hidden="true" data-testid="background-video">
-        <video
-          class="page-media-frame"
-          autoplay
-          muted
-          loop
-          playsinline
-          preload="metadata"
-          poster={poster}
-          tabindex="-1"
-        >
-          {media.sources.map((source) => (
-            <source src={siteHref(source.src)} type={source.type} />
+      <div class="page-media" aria-hidden="true" data-testid="background-media">
+        {hasStills &&
+          media.stills.map((still, index) => (
+            <img
+              class:list={['page-media-still', index === 0 && 'is-active']}
+              data-src={siteHref(still)}
+              alt=""
+              decoding="async"
+            />
           ))}
-        </video>
+        {hasVideo &&
+          players.map((index) => (
+            <video
+              class:list={['page-media-frame', index === 0 && 'is-active']}
+              muted
+              playsinline
+              preload="none"
+              poster={poster}
+              tabindex="-1"
+            >
+              {media.sources.map((source) => (
+                <source data-src={siteHref(source.src)} type={source.type} />
+              ))}
+            </video>
+          ))}
       </div>
       <div class="page-media-scrim" aria-hidden="true" />
-      <button
-        type="button"
-        class="chip sound-toggle"
-        data-testid="sound-toggle"
-        aria-pressed="false"
-        aria-label="Turn the background sound on"
-      >
-        <span data-sound-label>Sound off</span>
-      </button>
+      {hasVideo && (
+        <button
+          type="button"
+          class="chip sound-toggle"
+          data-testid="sound-toggle"
+          aria-pressed="false"
+          aria-label="Turn the background sound on"
+          hidden
+        >
+          <span data-sound-label>Sound off</span>
+        </button>
+      )}
     </>
   )
 }
 
 <script>
-  import { BACKGROUND_PLAYBACK_RATE } from '../../../../logic/media/background_video';
+  import {
+    BACKGROUND_HANDOVER_SECONDS,
+    BACKGROUND_PLAYBACK_RATE,
+    BACKGROUND_STILL_SECONDS,
+    BACKGROUND_WIDE_VIEWPORT,
+    nextStillIndex,
+    shouldHandOver,
+  } from '../../../../logic/media/background_video';
 
-  const frame = document.querySelector<HTMLVideoElement>('.page-media-frame');
+  const players = Array.from(
+    document.querySelectorAll<HTMLVideoElement>('.page-media-frame')
+  );
+  const stills = Array.from(
+    document.querySelectorAll<HTMLImageElement>('.page-media-still')
+  );
   const control = document.querySelector<HTMLButtonElement>(
     '[data-testid="sound-toggle"]'
   );
   const label = control?.querySelector<HTMLElement>('[data-sound-label]');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const wide = matchMedia(BACKGROUND_WIDE_VIEWPORT);
 
-  const settle = (): void => {
-    if (!frame) return;
-    frame.playbackRate = BACKGROUND_PLAYBACK_RATE;
-    if (still.matches && frame.muted) frame.pause();
-    else void frame.play().catch(() => undefined);
+  let active = 0;
+  let muted = true;
+  let videoStarted = false;
+
+  const prepare = (player: HTMLVideoElement): void => {
+    player.playbackRate = BACKGROUND_PLAYBACK_RATE;
+    player.muted = muted;
+  };
+
+  const play = (player: HTMLVideoElement): void => {
+    prepare(player);
+    if (still.matches && muted) player.pause();
+    else void player.play().catch(() => undefined);
+  };
+
+  /** Cross-fades to the standby player so the loop never seeks back to zero. */
+  const handOver = (): void => {
+    const outgoing = players[active];
+    const next = (active + 1) % players.length;
+    const incoming = players[next];
+    incoming.currentTime = 0;
+    play(incoming);
+    incoming.classList.add('is-active');
+    outgoing.classList.remove('is-active');
+    active = next;
+    window.setTimeout(() => {
+      outgoing.pause();
+      outgoing.currentTime = 0;
+    }, BACKGROUND_HANDOVER_SECONDS * 1000);
+  };
+
+  const watch = (): void => {
+    const current = players[active];
+    if (
+      current &&
+      !current.paused &&
+      shouldHandOver(current.currentTime, current.duration)
+    ) {
+      handOver();
+    }
+    requestAnimationFrame(watch);
   };
 
   const describe = (): void => {
-    if (!frame || !control || !label) return;
-    const on = !frame.muted;
-    label.textContent = on ? 'Sound on' : 'Sound off';
-    control.setAttribute('aria-pressed', String(on));
+    if (!control || !label) return;
+    label.textContent = muted ? 'Sound off' : 'Sound on';
+    control.setAttribute('aria-pressed', String(!muted));
     control.setAttribute(
       'aria-label',
-      on ? 'Turn the background sound off' : 'Turn the background sound on'
+      muted ? 'Turn the background sound on' : 'Turn the background sound off'
     );
   };
 
+  /** Attaches the video only on wide screens, so phones fetch none of it. */
+  const startVideo = (): void => {
+    if (videoStarted || players.length === 0) return;
+    videoStarted = true;
+    for (const player of players) {
+      for (const source of Array.from(player.querySelectorAll('source'))) {
+        const href = source.dataset.src;
+        if (href) source.src = href;
+      }
+      player.load();
+      prepare(player);
+    }
+    if (control) control.hidden = false;
+    play(players[active]);
+    players[active].addEventListener('loadedmetadata', () =>
+      play(players[active])
+    );
+    requestAnimationFrame(watch);
+  };
+
+  const startStills = (): void => {
+    if (stills.length === 0) return;
+    for (const image of stills) {
+      const href = image.dataset.src;
+      if (href) image.src = href;
+    }
+    if (stills.length < 2 || still.matches) return;
+    let current = 0;
+    window.setInterval(() => {
+      const next = nextStillIndex(current, stills.length);
+      stills[current].classList.remove('is-active');
+      stills[next].classList.add('is-active');
+      current = next;
+    }, BACKGROUND_STILL_SECONDS * 1000);
+  };
+
   control?.addEventListener('click', () => {
-    if (!frame) return;
-    frame.muted = !frame.muted;
+    muted = !muted;
+    for (const player of players) player.muted = muted;
     describe();
-    settle();
+    play(players[active]);
   });
 
-  settle();
-  frame?.addEventListener('loadedmetadata', settle);
-  frame?.addEventListener('play', settle);
-  still.addEventListener('change', settle);
+  startStills();
+  if (wide.matches) startVideo();
+  wide.addEventListener('change', () => {
+    if (wide.matches) startVideo();
+  });
+  still.addEventListener('change', () => {
+    if (videoStarted) play(players[active]);
+  });
 </script>

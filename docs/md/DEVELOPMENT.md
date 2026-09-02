@@ -42,6 +42,20 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 - Type is Barlow Condensed for display, navigation and labels, Barlow for body copy, both loaded from Google Fonts with a system fallback stack.
 - Design tokens and the component classes (`display`, `label`, `nav-link`, `entry`, `chip`, `prose`) live in `state/adapters/inbound/styles/global.css`.
 
+## Background media
+
+The landing page, and only the landing page, carries a fixed video backdrop. `BackgroundVideo.astro` renders it, `logic/media/background_video.ts` holds every decision about it, and `state/adapters/outbound/media/background_media_files.ts` is the only part that reads the disk.
+
+- The files live in `state/adapters/inbound/public/video/`: `background.webm` (VP9 video, Opus audio) and `background.mp4` (H.264 video, Advanced Audio Coding audio) are the two encodings, `background-poster.jpg` is the frame shown before playback, and `background-still-1.webp` through `background-still-9.webp` are the still frames. Whatever is present is used and nothing is required; with no files at all the backdrop is not rendered.
+- The source clips are joined ahead of time with one-second crossfades. The file is _not_ folded end-over-start: the loop is the last join and the two players perform it, crossfading the end of the final clip into the start of the first over `BACKGROUND_JOIN_CROSSFADE_SECONDS`. Baking a fold into the file as well makes the file and the players dissolve at the same instant, over mismatched positions, and the picture visibly dips. The current backdrop is four clips, 43 seconds, encoded 1152 pixels wide at about 300 kilobits per second, which holds a desktop visit near two megabytes.
+- Nothing is fetched declaratively. The markup carries `preload="none"`, no `autoplay`, and `data-src` rather than `src` on both the stills and the video sources. The script attaches the addresses and starts playback.
+- Above `BACKGROUND_WIDE_VIEWPORT` (`(min-width: 768px)`) the script attaches the video. Below it the video is never touched, so a narrow screen fetches no video bytes at all; it cycles the stills every `BACKGROUND_STILL_SECONDS` instead and the sound control stays hidden.
+- Two `video` elements alternate. `shouldHandOver` decides when the standby player takes over, `BACKGROUND_HANDOVER_SECONDS` before the end, so the loop never seeks back to zero and never stalls on the seek. That window is also the loop's crossfade, so it matches `BACKGROUND_JOIN_CROSSFADE_SECONDS` and the `opacity` transition on `.page-media-frame`; change one and change all three. `BACKGROUND_PLAYBACK_RATE` sets the speed.
+- Sound ships off. The control in the corner unmutes, and it is revealed only once the video has started.
+- `prefers-reduced-motion` holds the muted backdrop on a single frame and stops the stills from cycling.
+- `PUBLIC_ASSETS_DIR` overrides the static asset directory at build time. The browser suites use it to build from `tests/fixtures/public`, so no suite ever loads the real media.
+- `RMET-E2E-007` covers a wide screen: two players, muted, not looping, fixed, playing, at the configured rate, with a sound control that unmutes. `RMET-E2E-008` covers a 390 by 844 screen: an active still, no `.webm` or `.mp4` request, an empty `currentSrc`, and a hidden sound control.
+
 ## Environment
 
 Copy `.env.example` to `.env` and fill in the values.
@@ -78,7 +92,7 @@ value.
 
 ## Browser suite fixtures
 
-The repository ships no content, so the browser suites build their own. `withBuiltRuntime` in `tests/support/runtime-server.ts` runs a build with `PUBLIC_CONTENT_DIR=tests/fixtures/content` (and optionally a base path) into `test-results/built-site`, serves it as a static host would, and tears both down. `withRuntime` serves the real production build, which exercises the empty state.
+The repository ships no content, so the browser suites build their own. `withBuiltRuntime` in `tests/support/runtime-server.ts` runs a build with `PUBLIC_CONTENT_DIR=tests/fixtures/content` (and optionally `PUBLIC_ASSETS_DIR=tests/fixtures/public`, or a base path) into `test-results/built-site`, serves it as a static host would, and tears both down. `withRuntime` serves the real production build, which exercises the empty state.
 
 ## Deployment to GitHub Pages
 

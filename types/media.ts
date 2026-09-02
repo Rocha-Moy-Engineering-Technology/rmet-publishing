@@ -6,5 +6,6 @@ export interface BackgroundVideoSource {
 
 export interface BackgroundMedia {
   readonly sources: readonly BackgroundVideoSource[];
+  readonly stills: readonly string[];
   readonly poster?: string;
 }

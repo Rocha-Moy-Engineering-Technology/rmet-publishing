@@ -91,12 +91,33 @@
     pointer-events: none;
   }
 
-  .page-media-frame {
+  .page-media-frame,
+  .page-media-still {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.4;
+    opacity: 0;
     filter: grayscale(0.3) contrast(1.05);
+    /* Matches BACKGROUND_HANDOVER_SECONDS: this fade is the loop transition. */
+    transition: opacity 1s linear;
+  }
+
+  .page-media-still {
+    transition: opacity 1.2s linear;
+  }
+
+  .page-media-frame.is-active,
+  .page-media-still.is-active {
+    opacity: 0.4;
+  }
+
+  /* The video only ever loads above this width; below it the stills stand in. */
+  @media (min-width: 768px) {
+    .page-media-still {
+      display: none;
+    }
   }
 
   .page-media-scrim {
@@ -123,7 +144,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .page-media-frame {
+    .page-media-frame.is-active,
+    .page-media-still.is-active {
       opacity: 0.25;
     }
   }

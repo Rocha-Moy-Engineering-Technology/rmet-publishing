@@ -130,6 +130,36 @@ test('RMET-E2E-006 renders an MDX piece from the collection', async ({
   );
 });
 
+test('RMET-E2E-008 gives a narrow screen still frames and fetches no video', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR, assetsDir: FIXTURE_ASSETS_DIR },
+    async ({ baseURL }) => {
+      const requested: string[] = [];
+      page.on('request', (request) => requested.push(request.url()));
+
+      await page.goto(`${baseURL}/`);
+      await expect(page.locator('.page-media-still.is-active')).toHaveCount(1);
+
+      // the phone must not pay for the video at all
+      expect(requested.filter((url) => /\.(webm|mp4)$/.test(url))).toEqual([]);
+      expect(
+        await page
+          .locator('.page-media-frame')
+          .first()
+          .evaluate((node: HTMLVideoElement) => node.currentSrc)
+      ).toBe('');
+
+      // and there is no sound to offer
+      await expect(page.locator('[data-testid="sound-toggle"]')).toBeHidden();
+
+      await captureRoute(page, 'rmet-e2e-008', '/narrow');
+    }
+  );
+});
+
 test('RMET-E2E-007 plays the background video on a loop, silent until asked', async ({
   page,
 }) => {
@@ -138,38 +168,65 @@ test('RMET-E2E-007 plays the background video on a loop, silent until asked', as
     async ({ baseURL }) => {
       await page.goto(`${baseURL}/`);
       const video = page.locator('.page-media-frame');
-      await expect(video).toHaveCount(1);
+      await expect(video).toHaveCount(2);
 
-      const state = await video.evaluate((node: HTMLVideoElement) => ({
+      const state = await video.first().evaluate((node: HTMLVideoElement) => ({
         muted: node.muted,
         loop: node.loop,
         autoplay: node.autoplay,
         fixed: getComputedStyle(node.parentElement as HTMLElement).position,
       }));
+      // playback is script-driven, never declarative: the markup carries no
+      // autoplay and no source, so a narrow screen fetches nothing
       expect(state).toEqual({
         muted: true,
-        loop: true,
-        autoplay: true,
+        loop: false,
+        autoplay: false,
         fixed: 'fixed',
       });
 
+      await expect(page.locator('.page-media-frame.is-active')).toHaveCount(1);
+
       await expect
         .poll(async () =>
-          video.evaluate((node: HTMLVideoElement) => node.currentTime > 0)
+          video
+            .first()
+            .evaluate((node: HTMLVideoElement) => node.currentTime > 0)
         )
         .toBe(true);
 
       expect(
-        await video.evaluate((node: HTMLVideoElement) => node.playbackRate)
+        await video
+          .first()
+          .evaluate((node: HTMLVideoElement) => node.playbackRate)
       ).toBe(BACKGROUND_PLAYBACK_RATE);
 
       const control = page.locator('[data-testid="sound-toggle"]');
       await expect(control).toHaveAttribute('aria-pressed', 'false');
       await control.click();
       await expect(control).toHaveAttribute('aria-pressed', 'true');
-      expect(await video.evaluate((node: HTMLVideoElement) => node.muted)).toBe(
-        false
+      expect(
+        await video.first().evaluate((node: HTMLVideoElement) => node.muted)
+      ).toBe(false);
+
+      // drive the active player to the loop point: the standby must take over
+      // rather than the first player seeking back to zero
+      await video
+        .first()
+        .evaluate(
+          (node: HTMLVideoElement) => (node.currentTime = node.duration - 0.4)
+        );
+      await expect(page.locator('.page-media-frame').nth(1)).toHaveClass(
+        /is-active/
       );
+      await expect(page.locator('.page-media-frame').first()).not.toHaveClass(
+        /is-active/
+      );
+      expect(
+        await video
+          .nth(1)
+          .evaluate((node: HTMLVideoElement) => node.currentTime < 1)
+      ).toBe(true);
 
       await captureRoute(page, 'rmet-e2e-007', '/background');
 
