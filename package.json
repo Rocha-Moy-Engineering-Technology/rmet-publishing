@@ -24,27 +24,29 @@
     "test:generated": "npm run validate && npm run test:integration && npm run test:bdd && npm run test:e2e && npm run test:smoke"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "^0.3.8",
+    "@astrojs/mdx": "^7.0.8",
     "astro": "~7.2.8",
     "serve": "14.2.6"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "typescript": "6.0.3",
-    "@types/node": "26.4.0",
-    "tailwindcss": "4.3.3",
+    "@playwright/test": "1.62.1",
     "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.4.0",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "10.9.1",
     "eslint-plugin-astro": "3.1.0",
-    "typescript-eslint": "8.68.0",
+    "get-port": "7.2.0",
     "globals": "17.11.0",
+    "playwright": "1.62.1",
+    "playwright-bdd": "9.2.0",
+    "playwright-core": "1.62.1",
     "prettier": "3.9.6",
     "prettier-plugin-astro": "0.14.1",
-    "vitest": "4.1.11",
-    "@vitest/coverage-v8": "4.1.11",
-    "@playwright/test": "1.62.1",
-    "playwright": "1.62.1",
-    "playwright-core": "1.62.1",
-    "playwright-bdd": "9.2.0",
-    "get-port": "7.2.0"
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.68.0",
+    "vitest": "4.1.11"
   }
 }

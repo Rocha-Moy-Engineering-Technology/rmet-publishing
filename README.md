@@ -1,37 +1,54 @@
 # rmet-publishing
 
-An Astro 7.2 static site for publishing blogs, articles, and papers, with reader
-comments and reactions through GitHub Discussions.
+An Astro 7.2 static site for publishing writing, with reader comments and
+reactions through GitHub Discussions.
 
 ## Routes
 
-- `/` home, `/writing` every published piece
-- `/blog`, `/articles`, `/papers` one index per kind
-- `/blog/<slug>`, `/articles/<slug>`, `/papers/<slug>` a single piece
+- `/` the landing page: identity, the resume link, and every published piece newest first
+- `/writings/<slug>` a single piece (`/writings` redirects to `/`)
 - `/tags`, `/tags/<tag>` subject indexes
 - `/contact` email and profile links
 - `/rss.xml`, `/sitemap.xml` syndication
 - `/health` returns HTTP 200, `application/json`, and exactly `{"status":"ok"}`
 
+The resume sits in two places: a `RESUME` entry in the header, beside the GitHub
+and LinkedIn icons, and a call to action under the name on the landing page.
+
 ## Publishing a piece
 
-Add a Markdown file under `state/adapters/inbound/content/posts/`. The file name
-becomes the address slug. Front matter:
+From the agent root, create a draft file and start writing in it:
+
+```sh
+new_rmet_piece.py --title "Latency notes"
+```
+
+That writes `state/adapters/inbound/content/posts/<slug>.md` with `draft: true`.
+Pass `--format mdx` for an MDX file. The file name is the `/writings/<slug>`
+address. The script prints the full path and opens the file with `code`. Set
+`draft: false` (or pass `--publish`) when the piece should appear on the next
+build.
+
+You can also add a Markdown or MDX file under
+`state/adapters/inbound/content/posts/` by hand. Front matter:
 
 ```yaml
 title: 'A title'
 description: 'One sentence that appears in listings and the feed.'
-kind: 'blog' # blog | article | paper
 publishedAt: 2026-09-01
 updatedAt: 2026-09-08 # optional
 tags: ['Agents'] # optional
 draft: false # optional; drafts are excluded from the build
 authors: ['Pedro Henrique Rocha Moy'] # optional
-abstract: 'Papers only.' # optional
-doi: '10.1000/example' # optional
-pdfUrl: '/papers/example.pdf' # optional
+abstract: 'Optional; renders in a panel above the body.'
+doi: '10.1000/example' # optional; adds a citation block
+pdfUrl: '/papers/example.pdf' # optional; file lives in the public directory
 canonicalUrl: 'https://elsewhere.example/x' # optional
 ```
+
+Every piece uses the same shape. A piece carrying an abstract, a Digital Object
+Identifier (DOI), or a Portable Document Format (PDF) link renders those extras;
+one without them renders as a plain piece.
 
 ## Development
 
@@ -47,7 +64,7 @@ Copy `.env.example` and fill it in. `PUBLIC_SITE_URL` sets the address used for
 canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL` overrides the
 contact address. The four `PUBLIC_GISCUS_*` values switch on comments and
 reactions; without them each piece shows a short panel explaining how to enable
-them.
+them. `PUBLIC_BASE_PATH` sets the subpath the site is served from.
 
 ## GitHub Pages
 

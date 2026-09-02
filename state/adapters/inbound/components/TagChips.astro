@@ -15,10 +15,7 @@ const { tags } = Astro.props;
     <ul class="flex flex-wrap gap-2">
       {tags.map((tag) => (
         <li>
-          <a
-            href={siteHref(tagPath(slugify(tag)))}
-            class="rounded-full border border-line px-3 py-1 text-sm text-muted transition hover:border-accent hover:text-accent"
-          >
+          <a href={siteHref(tagPath(slugify(tag)))} class="chip inline-block">
             {tag}
           </a>
         </li>

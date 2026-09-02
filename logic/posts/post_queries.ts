@@ -1,15 +1,8 @@
 import { slugify } from '../text/slugify';
-import type { Post, PostKind, TagCount } from '../../types/post';
+import type { Post, TagCount } from '../../types/post';
 
 export function publishedPosts(posts: readonly Post[]): readonly Post[] {
   return posts.filter((post) => !post.draft);
-}
-
-export function postsOfKind(
-  posts: readonly Post[],
-  kind: PostKind
-): readonly Post[] {
-  return posts.filter((post) => post.kind === kind);
 }
 
 export function postsWithTag(
@@ -34,10 +27,9 @@ export function latestPosts(
 
 export function findPost(
   posts: readonly Post[],
-  kind: PostKind,
   slug: string
 ): Post | undefined {
-  return posts.find((post) => post.kind === kind && post.slug === slug);
+  return posts.find((post) => post.slug === slug);
 }
 
 export function collectTags(posts: readonly Post[]): readonly TagCount[] {

@@ -6,10 +6,18 @@
   type="button"
   data-testid="theme-toggle"
   aria-label="Switch between light and dark"
-  class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:text-ink"
+  class="icon-link flex h-5 w-5 items-center justify-center"
 >
-  <span aria-hidden="true" class="hidden dark:inline">☾</span>
-  <span aria-hidden="true" class="inline dark:hidden">☀</span>
+  <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+    <circle
+      cx="8"
+      cy="8"
+      r="6.25"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.2"></circle>
+    <path d="M8 1.75a6.25 6.25 0 0 1 0 12.5Z" fill="currentColor"></path>
+  </svg>
 </button>
 
 <script>
@@ -21,12 +29,12 @@
     const root = document.documentElement;
 
     const apply = (theme: CommentsTheme): void => {
-      root.classList.toggle('dark', theme === 'dark');
+      root.classList.toggle('light', theme === 'light');
       root.dataset.theme = theme;
       const frame = document.querySelector('iframe.giscus-frame');
       if (frame instanceof HTMLIFrameElement && frame.contentWindow) {
         frame.contentWindow.postMessage(
-          giscusThemeMessage(theme),
+          giscusThemeMessage(theme === 'light' ? 'light' : 'dark'),
           'https://giscus.app'
         );
       }
@@ -44,9 +52,9 @@
       '[data-testid="theme-toggle"]'
     )) {
       button.addEventListener('click', () => {
-        const next: CommentsTheme = root.classList.contains('dark')
-          ? 'light'
-          : 'dark';
+        const next: CommentsTheme = root.classList.contains('light')
+          ? 'dark'
+          : 'light';
         apply(next);
         store(next);
       });

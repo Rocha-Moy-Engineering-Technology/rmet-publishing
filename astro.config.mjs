@@ -1,3 +1,4 @@
+import mdx from '@astrojs/mdx';
 import tailwindcss from '@tailwindcss/vite';
 import serveConfig from './serve.json';
 import { defineConfig } from 'astro/config';
@@ -20,9 +21,13 @@ const serveConfigPlugin = {
 export default defineConfig({
   site: process.env.PUBLIC_SITE_URL ?? SITE.defaultSiteUrl,
   base: astroBase(process.env.PUBLIC_BASE_PATH),
+  redirects: {
+    '/writings': '/',
+  },
   srcDir: './state/adapters/inbound',
   publicDir: './state/adapters/inbound/public',
   output: 'static',
+  integrations: [mdx()],
   vite: {
     plugins: [tailwindcss(), serveConfigPlugin],
   },

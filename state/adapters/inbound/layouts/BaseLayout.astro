@@ -27,6 +27,7 @@ const pageTitle = title === SITE.name ? title : `${title} · ${SITE.name}`;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta name="author" content={SITE.author} />
+    <meta name="theme-color" content="#000000" />
     <link rel="canonical" href={canonical} />
     <link
       rel="alternate"
@@ -39,6 +40,12 @@ const pageTitle = title === SITE.name ? title : `${title} · ${SITE.name}`;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Barlow:wght@400;500&display=swap"
+    />
     <script is:inline>
       (() => {
         const root = document.documentElement;
@@ -48,23 +55,20 @@ const pageTitle = title === SITE.name ? title : `${title} · ${SITE.name}`;
         } catch {
           stored = null;
         }
-        const prefersDark =
-          typeof matchMedia === 'function' &&
-          matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = stored ?? (prefersDark ? 'dark' : 'light');
-        root.classList.toggle('dark', theme === 'dark');
+        const theme = stored === 'light' ? 'light' : 'dark';
+        root.classList.toggle('light', theme === 'light');
         root.dataset.theme = theme;
       })();
     </script>
   </head>
-  <body class="min-h-screen bg-surface text-ink">
+  <body class="min-h-screen bg-bg text-ink">
     <a
       href="#content"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-raised focus:px-3 focus:py-2"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:bg-raised focus:px-3 focus:py-2"
       >Skip to content</a
     >
     <SiteHeader path={path} />
-    <main id="content" class="mx-auto max-w-5xl px-6 py-14">
+    <main id="content" class="mx-auto max-w-6xl px-6 py-16">
       <slot />
     </main>
     <SiteFooter />

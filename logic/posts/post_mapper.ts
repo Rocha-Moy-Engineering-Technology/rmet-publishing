@@ -1,16 +1,17 @@
 import { slugify } from '../text/slugify';
 import { readingMinutes } from '../text/reading_time';
 import type { Post, PostSource } from '../../types/post';
+import { stripContentExtension } from './content_files';
 
 function slugFromId(id: string): string {
-  return slugify(id.slice(id.lastIndexOf('/') + 1));
+  const filename = id.slice(id.lastIndexOf('/') + 1);
+  return slugify(stripContentExtension(filename));
 }
 
 export function toPost(source: PostSource): Post {
   const { data } = source;
   return {
     slug: slugFromId(source.id),
-    kind: data.kind,
     title: data.title,
     description: data.description,
     publishedAt: data.publishedAt,

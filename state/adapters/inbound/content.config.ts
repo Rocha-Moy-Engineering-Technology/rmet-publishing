@@ -2,20 +2,16 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { defineCollection } from 'astro:content';
 
-import { POST_KINDS } from '../../../logic/posts/post_kinds';
-import type { PostKind } from '../../../types/post';
+import { CONTENT_GLOB } from '../../../logic/posts/content_files';
 
-const kinds = [...POST_KINDS] as [PostKind, ...PostKind[]];
+const CONTENT_BASE =
+  process.env.PUBLIC_CONTENT_DIR ?? './state/adapters/inbound/content/posts';
 
 const posts = defineCollection({
-  loader: glob({
-    base: './state/adapters/inbound/content/posts',
-    pattern: '**/*.md',
-  }),
+  loader: glob({ base: CONTENT_BASE, pattern: CONTENT_GLOB }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    kind: z.enum(kinds),
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),

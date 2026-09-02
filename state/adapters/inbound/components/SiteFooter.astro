@@ -1,21 +1,19 @@
 ---
-import SocialLinks from './SocialLinks.astro';
+import ProfileIcons from './ProfileIcons.astro';
 import { SITE } from '../../../../logic/site/site_config';
 import { siteHref } from '../site_links';
 
 const year = new Date().getUTCFullYear();
 ---
 
-<footer class="mt-24 border-t border-line">
+<footer class="mt-28 border-t border-line">
   <div
-    class="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between"
+    class="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-10 sm:flex-row sm:items-center sm:justify-between"
   >
-    <p>© {year} {SITE.author}</p>
-    <SocialLinks />
-    <a
-      href={siteHref('/rss.xml')}
-      class="underline decoration-line underline-offset-4 transition hover:text-accent"
-      >Feed</a
-    >
+    <p class="label">© {year} {SITE.author}</p>
+    <div class="flex items-center gap-7">
+      <a href={siteHref('/rss.xml')} class="nav-link">Feed</a>
+      <ProfileIcons />
+    </div>
   </div>
 </footer>

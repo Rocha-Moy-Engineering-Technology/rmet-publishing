@@ -29,10 +29,17 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 
 ## Content
 
-- Pieces live in `state/adapters/inbound/content/posts/` as Markdown with front matter.
-- One collection holds all three kinds; the `kind` field selects `blog`, `article`, or `paper`.
-- The file name becomes the slug, and the address is `/<kind segment>/<slug>` where the segments are `blog`, `articles`, and `papers`.
+- Pieces live in `state/adapters/inbound/content/posts/` as Markdown or MDX with front matter. The collection glob is `**/*.{md,mdx}`.
+- One collection holds every piece; there is no kind or category. The file name becomes the slug and the address is `/writings/<slug>`.
+- `abstract`, `doi`, and `pdfUrl` are optional per piece. A piece carrying them renders an abstract panel, a citation block, and a Portable Document Format (PDF) link; a piece without them renders plain.
 - `draft: true` excludes a piece from every listing, the feed, the sitemap, and the generated routes.
+- `PUBLIC_CONTENT_DIR` overrides the content directory at build time. The browser suites use it to build from `tests/fixtures/content` so no fixture is ever published.
+
+## Presentation
+
+- Dark is the default theme; the toggle switches to light and stores the choice under `rmet-theme`. The root element carries `data-theme` and, in light mode, the `light` class.
+- Type is Barlow Condensed for display, navigation and labels, Barlow for body copy, both loaded from Google Fonts with a system fallback stack.
+- Design tokens and the component classes (`display`, `label`, `nav-link`, `entry`, `chip`, `prose`) live in `state/adapters/inbound/styles/global.css`.
 
 ## Environment
 
@@ -67,6 +74,10 @@ value.
 - `astro.config.mjs` passes it through `astroBase` from `logic/site/base_path.ts`, which also feeds Astro's own asset rewriting.
 - Templates never write an internal address directly. `siteHref` in `state/adapters/inbound/site_links.ts` prefixes the base, and `sitePath` strips it before a path is compared against the navigation. Addresses that are not site-internal, such as external links, mail links, and fragments, pass through untouched.
 - `RMET-E2E-005` builds the site with the base path into a subdirectory, serves it the way Pages does, and checks that navigation, stylesheets, and the feed all resolve.
+
+## Browser suite fixtures
+
+The repository ships no content, so the browser suites build their own. `withBuiltRuntime` in `tests/support/runtime-server.ts` runs a build with `PUBLIC_CONTENT_DIR=tests/fixtures/content` (and optionally a base path) into `test-results/built-site`, serves it as a static host would, and tears both down. `withRuntime` serves the real production build, which exercises the empty state.
 
 ## Deployment to GitHub Pages
 

@@ -1,12 +1,9 @@
-import { kindSegment } from './post_kinds';
-import type { Post, PostKind } from '../../types/post';
+import type { Post } from '../../types/post';
 
-export function kindPath(kind: PostKind): string {
-  return `/${kindSegment(kind)}`;
-}
+export const WRITINGS_SEGMENT = 'writings';
 
 export function postPath(post: Post): string {
-  return `${kindPath(post.kind)}/${post.slug}`;
+  return `/${WRITINGS_SEGMENT}/${post.slug}`;
 }
 
 export function tagPath(tagSlug: string): string {
