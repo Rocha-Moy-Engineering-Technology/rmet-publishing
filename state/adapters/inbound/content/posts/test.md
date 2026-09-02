@@ -1,6 +1,0 @@
----
-title: 'test'
-description: 'test'
-publishedAt: 2026-09-02
-draft: true
----
