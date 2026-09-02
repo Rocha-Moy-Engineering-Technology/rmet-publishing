@@ -172,6 +172,11 @@ test('RMET-E2E-007 plays the background video on a loop, silent until asked', as
       );
 
       await captureRoute(page, 'rmet-e2e-007', '/background');
+
+      await page.locator('[data-testid="post-card"] a').first().click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.locator('.page-media-frame')).toHaveCount(0);
+      await expect(page.locator('[data-testid="sound-toggle"]')).toHaveCount(0);
     }
   );
 });

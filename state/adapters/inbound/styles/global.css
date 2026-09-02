@@ -99,10 +99,6 @@
     filter: grayscale(0.3) contrast(1.05);
   }
 
-  .reading .page-media-frame {
-    opacity: 0.16;
-  }
-
   .page-media-scrim {
     position: fixed;
     inset: 0;

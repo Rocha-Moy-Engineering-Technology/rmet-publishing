@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import BackgroundVideo from '../components/BackgroundVideo.astro';
 import PostList from '../components/PostList.astro';
 import { SITE } from '../../../../logic/site/site_config';
 import { postRepository } from '../../outbound/content/post_content_repository';
@@ -10,6 +11,8 @@ const posts = await postRepository().listPosts();
 ---
 
 <BaseLayout title={SITE.name} description={SITE.description}>
+  <BackgroundVideo />
+
   <section class="max-w-4xl">
     <h1 class="display text-[clamp(2.25rem,6.5vw,4.5rem)]">
       {SITE.publicationTitle}
