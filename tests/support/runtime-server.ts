@@ -7,22 +7,21 @@ import { expect, type Page } from '@playwright/test';
 import getPort from 'get-port';
 
 const MODE = 'astro-static';
-const ROUTES = [
-  '/',
-  '/writing',
-  '/blog',
-  '/articles',
-  '/papers',
-  '/tags',
-  '/contact',
-] as const;
+
+const ROUTES = ['/', '/tags', '/contact'] as const;
 
 const FEED_ROUTES = [
   { path: '/rss.xml', contentType: 'application/xml' },
   { path: '/sitemap.xml', contentType: 'application/xml' },
 ] as const;
 
-type Runtime = {
+export const BASE_PATH_FIXTURE = '/rmet-publishing';
+export const FIXTURE_CONTENT_DIR = 'tests/fixtures/content';
+const BUILD_ROOT = 'test-results/built-site';
+
+export type Runtime = { baseURL: string; basePath: string };
+
+type Process = {
   baseURL: string;
   child: ChildProcess;
   output: () => string;
@@ -34,89 +33,6 @@ export function htmlRoutes(): readonly string[] {
 
 export function feedRoutes(): readonly { path: string; contentType: string }[] {
   return FEED_ROUTES;
-}
-
-let shared: Runtime | undefined;
-
-export async function startSharedRuntime(): Promise<string> {
-  shared = await startRuntime();
-  return shared.baseURL;
-}
-
-export async function stopSharedRuntime(): Promise<void> {
-  if (!shared) return;
-  const { child } = shared;
-  shared = undefined;
-  await stopRuntime(child);
-}
-
-export const BASE_PATH_FIXTURE = '/rmet-publishing';
-
-const BASE_SITE_ROOT = 'test-results/base-site';
-
-export async function withBasedRuntime<T>(
-  action: (runtime: { baseURL: string; basePath: string }) => Promise<T>
-): Promise<T> {
-  await buildWithBasePath();
-  const port = await getPort();
-  const child = spawn(
-    'npx',
-    ['serve', '-l', `tcp://0.0.0.0:${port}`, BASE_SITE_ROOT],
-    {
-      cwd: process.cwd(),
-      detached: process.platform !== 'win32',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    }
-  );
-  const baseURL = `http://127.0.0.1:${port}`;
-  try {
-    await waitForAddress(`${baseURL}${BASE_PATH_FIXTURE}/`, child);
-    return await action({ baseURL, basePath: BASE_PATH_FIXTURE });
-  } finally {
-    await stopRuntime(child);
-  }
-}
-
-async function buildWithBasePath(): Promise<void> {
-  const outDir = `${BASE_SITE_ROOT}${BASE_PATH_FIXTURE}`;
-  const build = spawn('npx', ['astro', 'build', '--outDir', outDir], {
-    cwd: process.cwd(),
-    env: { ...process.env, PUBLIC_BASE_PATH: BASE_PATH_FIXTURE },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  let output = '';
-  build.stdout?.on('data', (chunk: Buffer) => {
-    output += chunk.toString();
-  });
-  build.stderr?.on('data', (chunk: Buffer) => {
-    output += chunk.toString();
-  });
-  const [code] = (await once(build, 'exit')) as [number | null];
-  if (code !== 0) {
-    throw new Error(`Base-path build failed:\n${output}`);
-  }
-}
-
-async function waitForAddress(url: string, child: ChildProcess): Promise<void> {
-  const deadline = Date.now() + 15000;
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) {
-      throw new Error(`Static server exited before readiness: ${url}`);
-    }
-    try {
-      const response = await fetch(url);
-      if (response.status === 200) return;
-    } catch {
-      /* not listening yet */
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error(`Static server readiness timed out: ${url}`);
-}
-
-export function sharedBaseUrl(): string {
-  if (!shared) throw new Error('Shared runtime has not been started');
-  return shared.baseURL;
 }
 
 export async function assertHealth(baseURL: string): Promise<void> {
@@ -145,18 +61,74 @@ export async function captureRoute(
   }
 }
 
+/** Serves the checked-in production build, which carries no content. */
 export async function withRuntime<T>(
-  action: (runtime: { baseURL: string }) => Promise<T>
+  action: (runtime: Runtime) => Promise<T>
 ): Promise<T> {
-  const runtime = await startRuntime();
+  const runtime = await startProductionServer();
   try {
-    return await action({ baseURL: runtime.baseURL });
+    return await action({ baseURL: runtime.baseURL, basePath: '' });
   } finally {
-    await stopRuntime(runtime.child);
+    await stopProcess(runtime.child);
   }
 }
 
-async function startRuntime(): Promise<Runtime> {
+/**
+ * Builds the site from fixture content (optionally under a base path) and
+ * serves it the way a static host would, then tears both down.
+ */
+export async function withBuiltRuntime<T>(
+  options: { basePath?: string; contentDir?: string },
+  action: (runtime: Runtime) => Promise<T>
+): Promise<T> {
+  const basePath = options.basePath ?? '';
+  const outDir = `${BUILD_ROOT}${basePath}`;
+  await build(outDir, basePath, options.contentDir);
+  const port = await getPort();
+  const child = spawn(
+    'npx',
+    ['serve', '-l', `tcp://0.0.0.0:${port}`, BUILD_ROOT],
+    {
+      cwd: process.cwd(),
+      detached: process.platform !== 'win32',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }
+  );
+  const baseURL = `http://127.0.0.1:${port}`;
+  try {
+    await waitForAddress(`${baseURL}${basePath}/`, child);
+    return await action({ baseURL, basePath });
+  } finally {
+    await stopProcess(child);
+  }
+}
+
+async function build(
+  outDir: string,
+  basePath: string,
+  contentDir?: string
+): Promise<void> {
+  const child = spawn('npx', ['astro', 'build', '--outDir', outDir], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      ...(basePath ? { PUBLIC_BASE_PATH: basePath } : {}),
+      ...(contentDir ? { PUBLIC_CONTENT_DIR: contentDir } : {}),
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let output = '';
+  child.stdout?.on('data', (chunk: Buffer) => {
+    output += chunk.toString();
+  });
+  child.stderr?.on('data', (chunk: Buffer) => {
+    output += chunk.toString();
+  });
+  const [code] = (await once(child, 'exit')) as [number | null];
+  if (code !== 0) throw new Error(`Build failed:\n${output}`);
+}
+
+async function startProductionServer(): Promise<Process> {
   const port = await getPort();
   let stdout = '';
   let stderr = '';
@@ -178,20 +150,19 @@ async function startRuntime(): Promise<Runtime> {
     output: () => `${stdout}${stderr}`,
   };
   try {
-    await waitUntilReady(runtime);
+    await waitUntilHealthy(runtime);
     return runtime;
   } catch (error) {
-    await stopRuntime(child);
+    await stopProcess(child);
     throw error;
   }
 }
 
-async function waitUntilReady(runtime: Runtime): Promise<void> {
+async function waitUntilHealthy(runtime: Process): Promise<void> {
   const deadline = Date.now() + 10000;
   while (Date.now() < deadline) {
     if (runtime.child.exitCode !== null) {
-      throw new Error(`Runtime exited before readiness:
-${runtime.output()}`);
+      throw new Error(`Runtime exited before readiness:\n${runtime.output()}`);
     }
     try {
       await assertHealth(runtime.baseURL);
@@ -200,23 +171,39 @@ ${runtime.output()}`);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
-  throw new Error(`Runtime readiness timed out:
-${runtime.output()}`);
+  throw new Error(`Runtime readiness timed out:\n${runtime.output()}`);
 }
 
-async function stopRuntime(child: ChildProcess): Promise<void> {
+async function waitForAddress(url: string, child: ChildProcess): Promise<void> {
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) {
+      throw new Error(`Static server exited before readiness: ${url}`);
+    }
+    try {
+      const response = await fetch(url);
+      if (response.status === 200) return;
+    } catch {
+      /* not listening yet */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`Static server readiness timed out: ${url}`);
+}
+
+async function stopProcess(child: ChildProcess): Promise<void> {
   if (child.exitCode !== null || child.pid === undefined) return;
-  signalRuntime(child, 'SIGTERM');
+  signal(child, 'SIGTERM');
   if (!(await exitsWithin(child, 1000))) {
-    signalRuntime(child, 'SIGKILL');
+    signal(child, 'SIGKILL');
     await once(child, 'exit');
   }
 }
 
-function signalRuntime(child: ChildProcess, signal: NodeJS.Signals): void {
+function signal(child: ChildProcess, signalName: NodeJS.Signals): void {
   if (child.pid === undefined) return;
-  if (process.platform === 'win32') child.kill(signal);
-  else process.kill(-child.pid, signal);
+  if (process.platform === 'win32') child.kill(signalName);
+  else process.kill(-child.pid, signalName);
 }
 
 async function exitsWithin(

@@ -12,7 +12,6 @@ const options = {
 describe('citation', () => {
   test('RMET-UNIT-110 cites authors, year, title, publication, and address', () => {
     const post = makePost({
-      kind: 'paper',
       title: 'On evaluation',
       authors: ['Rocha Moy, P.'],
       publishedAt: new Date('2026-05-04T00:00:00.000Z'),

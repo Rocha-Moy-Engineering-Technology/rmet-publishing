@@ -5,7 +5,6 @@ import {
   findPost,
   latestPosts,
   newestFirst,
-  postsOfKind,
   postsWithTag,
   publishedPosts,
 } from '../../logic/posts/post_queries';
@@ -20,7 +19,6 @@ const older = makePost({
 const newer = makePost({
   slug: 'newer',
   title: 'Newer',
-  kind: 'paper',
   publishedAt: new Date('2026-06-01T00:00:00.000Z'),
   tags: ['Agents', 'Evaluation'],
 });
@@ -42,12 +40,6 @@ describe('post queries', () => {
     expect(publishedPosts([older, draft]).map((post) => post.slug)).toEqual([
       'older',
     ]);
-  });
-
-  test('RMET-UNIT-081 keeps only one kind', () => {
-    expect(
-      postsOfKind([older, newer], 'paper').map((post) => post.slug)
-    ).toEqual(['newer']);
   });
 
   test('RMET-UNIT-082 keeps only the pieces carrying a tag', () => {
@@ -114,8 +106,8 @@ describe('post queries', () => {
     ]);
   });
 
-  test('RMET-UNIT-091 finds one piece by kind and slug', () => {
-    expect(findPost([older, newer], 'paper', 'newer')?.title).toBe('Newer');
-    expect(findPost([older, newer], 'blog', 'newer')).toBeUndefined();
+  test('RMET-UNIT-091 finds one piece by slug', () => {
+    expect(findPost([older, newer], 'newer')?.title).toBe('Newer');
+    expect(findPost([older, newer], 'missing')).toBeUndefined();
   });
 });

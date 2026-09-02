@@ -10,7 +10,6 @@ function source(overrides: Partial<PostSource> = {}): PostSource {
     data: {
       title: 'Agentic workflows',
       description: 'How agents get work done.',
-      kind: 'article',
       publishedAt: new Date('2026-02-01T00:00:00.000Z'),
     },
     ...overrides,
@@ -22,7 +21,6 @@ describe('mapping content to a post', () => {
     const post = toPost(source());
     expect(post.title).toBe('Agentic workflows');
     expect(post.description).toBe('How agents get work done.');
-    expect(post.kind).toBe('article');
     expect(post.publishedAt.toISOString()).toBe('2026-02-01T00:00:00.000Z');
   });
 
@@ -30,6 +28,14 @@ describe('mapping content to a post', () => {
     expect(toPost(source({ id: '2026/Agentic Workflows' })).slug).toBe(
       'agentic-workflows'
     );
+  });
+
+  test('RMET-UNIT-075 strips a Markdown extension from the identifier', () => {
+    expect(toPost(source({ id: 'notes/latency.md' })).slug).toBe('latency');
+  });
+
+  test('RMET-UNIT-076 strips an MDX extension from the identifier', () => {
+    expect(toPost(source({ id: 'notes/latency.mdx' })).slug).toBe('latency');
   });
 
   test('RMET-UNIT-072 defaults the optional front matter', () => {
@@ -50,7 +56,6 @@ describe('mapping content to a post', () => {
         data: {
           title: 'On evaluation',
           description: 'Measuring agents.',
-          kind: 'paper',
           publishedAt: new Date('2026-03-01T00:00:00.000Z'),
           updatedAt: new Date('2026-04-01T00:00:00.000Z'),
           tags: ['Evaluation', 'Agents'],

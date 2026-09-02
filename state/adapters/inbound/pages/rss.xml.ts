@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ site }) => {
   const posts = await postRepository().listPosts();
   const feed = buildRssFeed(
     {
-      title: SITE.name,
+      title: SITE.publicationTitle,
       link: absoluteUrl(base, siteHref('/')),
       description: SITE.description,
       language: SITE.locale,

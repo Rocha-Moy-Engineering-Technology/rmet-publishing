@@ -1,22 +1,33 @@
-export interface SocialLink {
+export type ProfileMark = 'github' | 'linkedin' | 'resume';
+
+export interface ProfileLink {
   readonly label: string;
   readonly handle: string;
   readonly href: string;
   readonly testId: string;
+  readonly mark: ProfileMark;
 }
 
 export interface NavigationItem {
   readonly label: string;
   readonly href: string;
+  readonly external: boolean;
 }
+
+export interface NavigationLink extends NavigationItem {
+  readonly active: boolean;
+}
+
+export type AnchorAttributes = Readonly<Record<string, string>>;
 
 export interface SiteConfig {
   readonly name: string;
+  readonly publicationTitle: string;
   readonly tagline: string;
   readonly description: string;
   readonly author: string;
   readonly locale: string;
   readonly defaultSiteUrl: string;
   readonly defaultContactEmail: string;
-  readonly socialLinks: readonly SocialLink[];
+  readonly profileLinks: readonly ProfileLink[];
 }

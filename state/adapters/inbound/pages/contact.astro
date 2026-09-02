@@ -19,17 +19,15 @@ const parts = splitEmail(address);
   description="Ways to reach Pedro Henrique Rocha Moy."
 >
   <header class="max-w-2xl">
-    <h1 class="text-4xl font-semibold tracking-tight">Get in touch</h1>
+    <h1 class="display text-[clamp(2rem,5vw,3.25rem)]">Get in touch</h1>
     <p class="mt-4 text-lg text-muted">
       Comments on any piece are welcome through GitHub Discussions. For anything
       else, these routes reach me directly.
     </p>
   </header>
 
-  <section class="mt-10 max-w-2xl rounded-xl border border-line bg-raised p-6">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
-      Email
-    </h2>
+  <section class="mt-12 max-w-2xl border border-line p-6">
+    <h2 class="label">Email</h2>
     {
       parts ? (
         <p class="mt-3 text-lg">
@@ -56,11 +54,9 @@ const parts = splitEmail(address);
   </section>
 
   <section class="mt-8 max-w-2xl">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-accent">
-      Elsewhere
-    </h2>
+    <h2 class="label">Elsewhere</h2>
     <div class="mt-4">
-      <SocialLinks showHandles />
+      <SocialLinks />
     </div>
   </section>
 </BaseLayout>

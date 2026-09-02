@@ -1,11 +1,9 @@
 import type { APIRoute } from 'astro';
 
 import { buildSitemap } from '../../../../logic/feed/sitemap';
-import { POST_KINDS } from '../../../../logic/posts/post_kinds';
 import { collectTags } from '../../../../logic/posts/post_queries';
 import {
   absoluteUrl,
-  kindPath,
   postPath,
   tagPath,
 } from '../../../../logic/posts/post_routes';
@@ -16,14 +14,13 @@ import type { SitemapEntry } from '../../../../types/feed';
 
 export const prerender = true;
 
-const STATIC_PATHS: readonly string[] = ['/', '/writing', '/tags', '/contact'];
+const STATIC_PATHS: readonly string[] = ['/', '/tags', '/contact'];
 
 export const GET: APIRoute = async ({ site }) => {
   const base = site?.href ?? SITE.defaultSiteUrl;
   const posts = await postRepository().listPosts();
   const paths: readonly string[] = [
     ...STATIC_PATHS,
-    ...POST_KINDS.map(kindPath),
     ...collectTags(posts).map((tag) => tagPath(tag.slug)),
   ];
   const entries: readonly SitemapEntry[] = [

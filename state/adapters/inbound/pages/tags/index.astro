@@ -11,22 +11,16 @@ const tags = collectTags(await postRepository().listPosts());
 ---
 
 <BaseLayout title="Tags" description="Every subject covered here.">
-  <header class="max-w-2xl">
-    <h1 class="text-4xl font-semibold tracking-tight">Tags</h1>
-    <p class="mt-4 text-lg text-muted">Every subject covered here.</p>
-  </header>
+  <h1 class="display text-[clamp(2rem,5vw,3.25rem)]">Tags</h1>
   {
     tags.length === 0 ? (
-      <p class="mt-10 text-muted">No tags yet.</p>
+      <p class="label mt-10 border-t border-line py-10">No tags yet</p>
     ) : (
       <ul class="mt-10 flex flex-wrap gap-3">
         {tags.map((tag) => (
           <li>
-            <a
-              href={siteHref(tagPath(tag.slug))}
-              class="rounded-full border border-line px-4 py-2 text-muted transition hover:border-accent hover:text-accent"
-            >
-              {tag.tag} <span class="text-sm">({tag.count})</span>
+            <a href={siteHref(tagPath(tag.slug))} class="chip inline-block">
+              {tag.tag} ({tag.count})
             </a>
           </li>
         ))}

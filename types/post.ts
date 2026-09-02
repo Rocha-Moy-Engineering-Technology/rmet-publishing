@@ -1,9 +1,6 @@
-export type PostKind = 'blog' | 'article' | 'paper';
-
 export interface PostFrontmatter {
   readonly title: string;
   readonly description: string;
-  readonly kind: PostKind;
   readonly publishedAt: Date;
   readonly updatedAt?: Date;
   readonly tags?: readonly string[];
@@ -23,7 +20,6 @@ export interface PostSource {
 
 export interface Post {
   readonly slug: string;
-  readonly kind: PostKind;
   readonly title: string;
   readonly description: string;
   readonly publishedAt: Date;
