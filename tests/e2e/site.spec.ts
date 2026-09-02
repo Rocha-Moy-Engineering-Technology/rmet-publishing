@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+import { BACKGROUND_PLAYBACK_RATE } from '../../logic/media/background_video';
 import {
   BASE_PATH_FIXTURE,
+  FIXTURE_ASSETS_DIR,
   FIXTURE_CONTENT_DIR,
   captureRoute,
   feedRoutes,
@@ -124,6 +126,52 @@ test('RMET-E2E-006 renders an MDX piece from the collection', async ({
         'The MDX pipeline evaluated two plus two as 4.'
       );
       await captureRoute(page, 'rmet-e2e-006', '/mdx-piece');
+    }
+  );
+});
+
+test('RMET-E2E-007 plays the background video on a loop, silent until asked', async ({
+  page,
+}) => {
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR, assetsDir: FIXTURE_ASSETS_DIR },
+    async ({ baseURL }) => {
+      await page.goto(`${baseURL}/`);
+      const video = page.locator('.page-media-frame');
+      await expect(video).toHaveCount(1);
+
+      const state = await video.evaluate((node: HTMLVideoElement) => ({
+        muted: node.muted,
+        loop: node.loop,
+        autoplay: node.autoplay,
+        fixed: getComputedStyle(node.parentElement as HTMLElement).position,
+      }));
+      expect(state).toEqual({
+        muted: true,
+        loop: true,
+        autoplay: true,
+        fixed: 'fixed',
+      });
+
+      await expect
+        .poll(async () =>
+          video.evaluate((node: HTMLVideoElement) => node.currentTime > 0)
+        )
+        .toBe(true);
+
+      expect(
+        await video.evaluate((node: HTMLVideoElement) => node.playbackRate)
+      ).toBe(BACKGROUND_PLAYBACK_RATE);
+
+      const control = page.locator('[data-testid="sound-toggle"]');
+      await expect(control).toHaveAttribute('aria-pressed', 'false');
+      await control.click();
+      await expect(control).toHaveAttribute('aria-pressed', 'true');
+      expect(await video.evaluate((node: HTMLVideoElement) => node.muted)).toBe(
+        false
+      );
+
+      await captureRoute(page, 'rmet-e2e-007', '/background');
     }
   );
 });

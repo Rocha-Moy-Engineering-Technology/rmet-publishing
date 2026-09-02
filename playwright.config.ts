@@ -9,14 +9,17 @@ const bddTestDir = defineBddConfig({
 
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
 
+const launchArguments = ['--autoplay-policy=no-user-gesture-required'];
+
 const chrome = executablePath
   ? {
       ...devices['Desktop Chrome'],
-      launchOptions: { executablePath },
+      launchOptions: { executablePath, args: launchArguments },
     }
   : {
       ...devices['Desktop Chrome'],
       channel: 'chrome',
+      launchOptions: { args: launchArguments },
     };
 
 export default defineConfig({

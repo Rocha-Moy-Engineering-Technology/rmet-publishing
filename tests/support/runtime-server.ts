@@ -17,6 +17,7 @@ const FEED_ROUTES = [
 
 export const BASE_PATH_FIXTURE = '/rmet-publishing';
 export const FIXTURE_CONTENT_DIR = 'tests/fixtures/content';
+export const FIXTURE_ASSETS_DIR = 'tests/fixtures/public';
 const BUILD_ROOT = 'test-results/built-site';
 
 export type Runtime = { baseURL: string; basePath: string };
@@ -78,12 +79,12 @@ export async function withRuntime<T>(
  * serves it the way a static host would, then tears both down.
  */
 export async function withBuiltRuntime<T>(
-  options: { basePath?: string; contentDir?: string },
+  options: { basePath?: string; contentDir?: string; assetsDir?: string },
   action: (runtime: Runtime) => Promise<T>
 ): Promise<T> {
   const basePath = options.basePath ?? '';
   const outDir = `${BUILD_ROOT}${basePath}`;
-  await build(outDir, basePath, options.contentDir);
+  await build(outDir, basePath, options.contentDir, options.assetsDir);
   const port = await getPort();
   const child = spawn(
     'npx',
@@ -106,7 +107,8 @@ export async function withBuiltRuntime<T>(
 async function build(
   outDir: string,
   basePath: string,
-  contentDir?: string
+  contentDir?: string,
+  assetsDir?: string
 ): Promise<void> {
   const child = spawn('npx', ['astro', 'build', '--outDir', outDir], {
     cwd: process.cwd(),
@@ -114,6 +116,7 @@ async function build(
       ...process.env,
       ...(basePath ? { PUBLIC_BASE_PATH: basePath } : {}),
       ...(contentDir ? { PUBLIC_CONTENT_DIR: contentDir } : {}),
+      ...(assetsDir ? { PUBLIC_ASSETS_DIR: assetsDir } : {}),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });

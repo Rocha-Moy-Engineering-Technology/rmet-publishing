@@ -1,0 +1,82 @@
+---
+import { readBackgroundMedia } from '../../outbound/media/background_media_files';
+import { siteHref } from '../site_links';
+
+const media = readBackgroundMedia();
+const poster = media.poster ? siteHref(media.poster) : undefined;
+const hasVideo = media.sources.length > 0;
+---
+
+{
+  hasVideo && (
+    <>
+      <div class="page-media" aria-hidden="true" data-testid="background-video">
+        <video
+          class="page-media-frame"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster={poster}
+          tabindex="-1"
+        >
+          {media.sources.map((source) => (
+            <source src={siteHref(source.src)} type={source.type} />
+          ))}
+        </video>
+      </div>
+      <div class="page-media-scrim" aria-hidden="true" />
+      <button
+        type="button"
+        class="chip sound-toggle"
+        data-testid="sound-toggle"
+        aria-pressed="false"
+        aria-label="Turn the background sound on"
+      >
+        <span data-sound-label>Sound off</span>
+      </button>
+    </>
+  )
+}
+
+<script>
+  import { BACKGROUND_PLAYBACK_RATE } from '../../../../logic/media/background_video';
+
+  const frame = document.querySelector<HTMLVideoElement>('.page-media-frame');
+  const control = document.querySelector<HTMLButtonElement>(
+    '[data-testid="sound-toggle"]'
+  );
+  const label = control?.querySelector<HTMLElement>('[data-sound-label]');
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  const settle = (): void => {
+    if (!frame) return;
+    frame.playbackRate = BACKGROUND_PLAYBACK_RATE;
+    if (still.matches && frame.muted) frame.pause();
+    else void frame.play().catch(() => undefined);
+  };
+
+  const describe = (): void => {
+    if (!frame || !control || !label) return;
+    const on = !frame.muted;
+    label.textContent = on ? 'Sound on' : 'Sound off';
+    control.setAttribute('aria-pressed', String(on));
+    control.setAttribute(
+      'aria-label',
+      on ? 'Turn the background sound off' : 'Turn the background sound on'
+    );
+  };
+
+  control?.addEventListener('click', () => {
+    if (!frame) return;
+    frame.muted = !frame.muted;
+    describe();
+    settle();
+  });
+
+  settle();
+  frame?.addEventListener('loadedmetadata', settle);
+  frame?.addEventListener('play', settle);
+  still.addEventListener('change', settle);
+</script>

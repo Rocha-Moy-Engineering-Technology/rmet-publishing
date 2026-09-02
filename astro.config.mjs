@@ -25,7 +25,7 @@ export default defineConfig({
     '/writings': '/',
   },
   srcDir: './state/adapters/inbound',
-  publicDir: './state/adapters/inbound/public',
+  publicDir: process.env.PUBLIC_ASSETS_DIR ?? './state/adapters/inbound/public',
   output: 'static',
   integrations: [mdx()],
   vite: {

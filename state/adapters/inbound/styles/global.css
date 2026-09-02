@@ -42,9 +42,13 @@
     color-scheme: light;
   }
 
+  html {
+    background-color: var(--bg);
+  }
+
   body {
     margin: 0;
-    background-color: var(--bg);
+    background-color: transparent;
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 16px;
@@ -79,6 +83,55 @@
 }
 
 @layer components {
+  .page-media {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .page-media-frame {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    filter: grayscale(0.3) contrast(1.05);
+  }
+
+  .reading .page-media-frame {
+    opacity: 0.16;
+  }
+
+  .page-media-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 70%, transparent) 60%,
+      color-mix(in srgb, var(--bg) 85%, transparent) 100%
+    );
+  }
+
+  .sound-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 5;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-media-frame {
+      opacity: 0.25;
+    }
+  }
+
   .display {
     font-family: var(--font-display);
     text-transform: uppercase;
