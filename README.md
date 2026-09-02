@@ -17,17 +17,25 @@ and LinkedIn icons, and a call to action under the name on the landing page.
 
 ## Publishing a piece
 
-From the agent root, create a draft file and start writing in it:
+From the agent root, `rmet_publishing.py` creates, lists, publishes,
+unpublishes, opens, and deletes pieces:
 
 ```sh
-new_rmet_piece.py --title "Latency notes"
+rmet_publishing.py create --title "Latency notes"
+rmet_publishing.py list
+rmet_publishing.py publish latency-notes
+rmet_publishing.py unpublish "Latency notes"
+rmet_publishing.py open latency-notes
+rmet_publishing.py delete latency-notes
 ```
 
-That writes `state/adapters/inbound/content/posts/<slug>.md` with `draft: true`.
-Pass `--format mdx` for an MDX file. The file name is the `/writings/<slug>`
-address. The script prints the full path and opens the file with `code`. Set
-`draft: false` (or pass `--publish`) when the piece should appear on the next
-build.
+`create` writes `state/adapters/inbound/content/posts/<slug>.md` with
+`draft: true`. Pass `--format mdx` for an MDX file. The file name is the
+`/writings/<slug>` address. The script prints the full path and opens the file
+with `code`. `publish` / `unpublish` / `open` / `delete` take a title or a
+slug. `list` shows every piece, draft and published. Set `draft: false` (or
+pass `--publish` on create, or run `publish`) when the piece should appear on
+the next build.
 
 You can also add a Markdown or MDX file under
 `state/adapters/inbound/content/posts/` by hand. Front matter:

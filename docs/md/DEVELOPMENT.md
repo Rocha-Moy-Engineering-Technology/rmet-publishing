@@ -29,6 +29,7 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 
 ## Content
 
+- From the agent root, `rmet_publishing.py` creates, lists, publishes, unpublishes, opens, and deletes those files (`create --title "…"`, `list`, `publish` / `unpublish` / `open` / `delete` with a title or slug).
 - Pieces live in `state/adapters/inbound/content/posts/` as Markdown or MDX with front matter. The collection glob is `**/*.{md,mdx}`.
 - One collection holds every piece; there is no kind or category. The file name becomes the slug and the address is `/writings/<slug>`.
 - `abstract`, `doi`, and `pdfUrl` are optional per piece. A piece carrying them renders an abstract panel, a citation block, and a Portable Document Format (PDF) link; a piece without them renders plain.
