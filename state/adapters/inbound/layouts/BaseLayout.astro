@@ -1,6 +1,7 @@
 ---
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
+import Subscribe from '../components/Subscribe.astro';
 import { SITE } from '../../../../logic/site/site_config';
 import { absoluteUrl } from '../../../../logic/posts/post_routes';
 import { siteHref } from '../site_links';
@@ -72,5 +73,6 @@ const pageTitle = title === SITE.name ? title : `${title} · ${SITE.name}`;
       <slot />
     </main>
     <SiteFooter />
+    <Subscribe />
   </body>
 </html>

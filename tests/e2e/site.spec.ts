@@ -39,7 +39,7 @@ test('RMET-E2E-001 navigates from the landing page into a piece', async ({
       await firstCard.click();
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('article h1')).toHaveText(title);
-      await expect(page.locator('[data-testid="subscribe"]')).toBeVisible();
+      await expect(page.locator('[data-testid="feed-link"]')).toHaveCount(2);
       await expect(page.locator('[data-testid="comments"]')).toBeVisible();
       expect(page.url()).toContain('/writings/');
       await captureRoute(page, 'rmet-e2e-001', '/piece');
@@ -410,20 +410,19 @@ test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in t
   );
 });
 
-test('RMET-E2E-010 offers the feed in place of the form while no provider is configured', async ({
+test('RMET-E2E-010 offers only the feed icon while no provider is configured', async ({
   page,
 }) => {
   await withRuntime(async ({ baseURL }) => {
     await page.goto(`${baseURL}/`);
-    const section = page.locator('[data-testid="subscribe"]');
-    await expect(section).toBeVisible();
-    await expect(section.locator('form')).toHaveCount(0);
-    await expect(section.locator('[data-testid="subscribe-open"]')).toHaveCount(
+    await expect(page.locator('[data-testid="subscribe-popover"]')).toHaveCount(
       0
     );
-    const feed = section.locator('[data-testid="feed-link"]');
-    await expect(feed).toBeVisible();
-    await expect(feed).toHaveAttribute('href', '/rss.xml');
+    await expect(page.locator('[data-testid="subscribe-open"]')).toHaveCount(0);
+    const feeds = page.locator('[data-testid="feed-link"]');
+    await expect(feeds).toHaveCount(2);
+    await expect(feeds.first()).toBeVisible();
+    await expect(feeds.first()).toHaveAttribute('href', '/rss.xml');
     await captureRoute(page, 'rmet-e2e-010', '/subscribe-unconfigured');
   });
 });

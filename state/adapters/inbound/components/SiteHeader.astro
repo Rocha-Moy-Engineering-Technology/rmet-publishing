@@ -1,4 +1,5 @@
 ---
+import FeedIcons from './FeedIcons.astro';
 import ProfileIcons from './ProfileIcons.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { SITE } from '../../../../logic/site/site_config';
@@ -46,7 +47,10 @@ const links = navigationLinks(sitePath(path)).map((link) => ({
           }
         </ul>
       </nav>
-      <ProfileIcons />
+      <div class="flex items-center gap-4">
+        <FeedIcons />
+        <ProfileIcons />
+      </div>
       <ThemeToggle />
     </div>
   </div>

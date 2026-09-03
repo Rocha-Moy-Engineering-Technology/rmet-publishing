@@ -1,7 +1,7 @@
 ---
+import FeedIcons from './FeedIcons.astro';
 import ProfileIcons from './ProfileIcons.astro';
 import { SITE } from '../../../../logic/site/site_config';
-import { siteHref } from '../site_links';
 
 const year = new Date().getUTCFullYear();
 ---
@@ -11,8 +11,8 @@ const year = new Date().getUTCFullYear();
     class="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-10 sm:flex-row sm:items-center sm:justify-between"
   >
     <p class="label">© {year} {SITE.author}</p>
-    <div class="flex items-center gap-7">
-      <a href={siteHref('/rss.xml')} class="nav-link">Feed</a>
+    <div class="flex items-center gap-4">
+      <FeedIcons />
       <ProfileIcons />
     </div>
   </div>

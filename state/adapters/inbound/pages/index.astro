@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BackgroundVideo from '../components/BackgroundVideo.astro';
 import PostList from '../components/PostList.astro';
-import Subscribe from '../components/Subscribe.astro';
 import { SITE } from '../../../../logic/site/site_config';
 import { postRepository } from '../../outbound/content/post_content_repository';
 
@@ -25,6 +24,4 @@ const posts = await postRepository().listPosts();
     <h2 class="label mb-6">Writings</h2>
     <PostList posts={posts} />
   </section>
-
-  <Subscribe />
 </BaseLayout>

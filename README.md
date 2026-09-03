@@ -65,15 +65,15 @@ one without them renders as a plain piece.
 
 ## Subscriptions
 
-The landing page and every piece end with a "New writing by email" section:
-a Subscribe button that opens a small popup with one email box, beside an RSS
-feed button. The popup posts the reader's address straight to an RSS-to-email
-provider; the provider
-watches `/rss.xml` and emails every subscriber when a new piece appears there.
+Every page carries an envelope icon and an RSS feed icon in the header and
+footer icon rows, beside GitHub and LinkedIn. The envelope opens a small popup
+with one email box; the popup posts the reader's address straight to an
+RSS-to-email provider, and the provider watches `/rss.xml` and emails every
+subscriber when a new piece appears there.
 Publishing is the only step: set `draft: false`, push, and the provider's next
 poll sends the email. The site has no server and never sees an address, so
 unsubscribing is the provider's job too: every email it sends carries an
-unsubscribe link, and the section says so.
+unsubscribe link, and the popup says so.
 
 The feed carries each piece in full. Its rendered body travels in
 `content:encoded`, MDX evaluated, with every root-relative link and image made
@@ -95,8 +95,8 @@ Two variables switch it on:
   address under; defaults to `email`. Kit expects `email_address`, Mailchimp
   `EMAIL`.
 
-Without `PUBLIC_SUBSCRIBE_ACTION` the section shows one sentence and only the
-RSS feed button. Point the provider's RSS-to-email feature at
+Without `PUBLIC_SUBSCRIBE_ACTION` the envelope and the popup are absent and
+only the RSS feed icon remains. Point the provider's RSS-to-email feature at
 `<PUBLIC_SITE_URL><PUBLIC_BASE_PATH>/rss.xml`.
 
 ## Background video
@@ -135,8 +135,8 @@ canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL` overrides the
 contact address. The four `PUBLIC_GISCUS_*` values switch on comments and
 reactions; without them each piece shows a short panel explaining how to enable
 them. `PUBLIC_SUBSCRIBE_ACTION` (and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the
-provider reads a field other than `email`) switches on the email subscription
-form; without it the section points at the feed. `PUBLIC_BASE_PATH` sets the
+provider reads a field other than `email`) switches on the envelope icon and
+its subscribe popup; without it only the feed icon shows. `PUBLIC_BASE_PATH` sets the
 subpath the site is served from.
 
 ## GitHub Pages
