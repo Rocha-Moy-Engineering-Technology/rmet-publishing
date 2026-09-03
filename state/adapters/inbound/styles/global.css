@@ -84,6 +84,9 @@
 
 @layer components {
   .page-media {
+    /* The one treatment the backdrop wears, whether it is the video or a still. */
+    --media-opacity: 0.4;
+    --media-filter: grayscale(0.3) contrast(1.05);
     position: fixed;
     inset: 0;
     z-index: -2;
@@ -99,23 +102,54 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    filter: grayscale(0.3) contrast(1.05);
+  }
+
+  .page-media-frame {
+    filter: var(--media-filter);
     /* Matches BACKGROUND_HANDOVER_SECONDS: this fade is the loop transition. */
     transition: opacity 1s linear;
   }
 
-  .page-media-still {
-    transition: opacity 1.2s linear;
+  .page-media-frame.is-active {
+    opacity: var(--media-opacity);
   }
 
-  .page-media-frame.is-active,
+  /*
+   * The stills wear the treatment as one group, so a dissolve between two of
+   * them mixes whole images and never dips towards the page background.
+   */
+  .page-media-stills {
+    position: absolute;
+    inset: 0;
+    opacity: var(--media-opacity);
+    filter: var(--media-filter);
+  }
+
+  .page-media-still {
+    /* The duration is BACKGROUND_STILL_FADE_SECONDS, set by the script. */
+    transition: opacity linear;
+  }
+
   .page-media-still.is-active {
-    opacity: 0.4;
+    opacity: 1;
+    z-index: 1;
+  }
+
+  /* The outgoing still stays whole beneath the one dissolving in over it. */
+  .page-media-still.is-leaving {
+    opacity: 1;
   }
 
   /* The video only ever loads above this width; below it the stills stand in. */
   @media (min-width: 768px) {
-    .page-media-still {
+    .page-media-stills {
+      display: none;
+    }
+  }
+
+  /* Below it the players never show, so the poster cannot blend into a still. */
+  @media not all and (min-width: 768px) {
+    .page-media-frame {
       display: none;
     }
   }
@@ -144,9 +178,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .page-media-frame.is-active,
-    .page-media-still.is-active {
-      opacity: 0.25;
+    .page-media {
+      --media-opacity: 0.25;
     }
   }
 

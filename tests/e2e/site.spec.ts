@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 import {
   BACKGROUND_HANDOVER_SECONDS,
   BACKGROUND_PLAYBACK_RATE,
+  BACKGROUND_STILL_FADE_SECONDS,
+  BACKGROUND_STILL_HOLD_SECONDS,
 } from '../../logic/media/background_video';
 import {
   BASE_PATH_FIXTURE,
@@ -244,6 +246,88 @@ test('RMET-E2E-007 plays the background video on a loop, silent until asked', as
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('.page-media-frame')).toHaveCount(0);
       await expect(page.locator('[data-testid="sound-toggle"]')).toHaveCount(0);
+    }
+  );
+});
+
+test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in the next', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR, assetsDir: FIXTURE_ASSETS_DIR },
+    async ({ baseURL }) => {
+      await page.goto(`${baseURL}/`);
+      const stills = page.locator('.page-media-still');
+      await expect(stills).toHaveCount(2);
+
+      // the stills carry the video's treatment, applied once around all of them
+      expect(
+        await page.locator('.page-media-stills').evaluate((node) => {
+          const style = getComputedStyle(node);
+          return { opacity: style.opacity, filter: style.filter };
+        })
+      ).toEqual({ opacity: '0.4', filter: 'grayscale(0.3) contrast(1.05)' });
+      await expect(stills.first()).toHaveCSS(
+        'transition-duration',
+        `${BACKGROUND_STILL_FADE_SECONDS}s`
+      );
+
+      // a portrait crop is centred on each still's subject: the station
+      // crosses the right of its frame, the lunar lander stands at the right
+      await expect(stills.first()).toHaveCSS('object-position', '80% 50%');
+      await expect(stills.nth(1)).toHaveCSS('object-position', '94% 50%');
+
+      // the players are not displayed on this screen at all, so neither the
+      // poster nor a frame can blend into a still
+      const frames = page.locator('.page-media-frame');
+      await expect(frames).toHaveCount(2);
+      for (const frame of await frames.all()) {
+        await expect(frame).toBeHidden();
+      }
+
+      const state = () =>
+        page.locator('.page-media-stills').evaluate((root) =>
+          Array.from(root.querySelectorAll('img')).map((image) => ({
+            active: image.classList.contains('is-active'),
+            leaving: image.classList.contains('is-leaving'),
+            opacity: getComputedStyle(image).opacity,
+          }))
+        );
+      const alone = (index: number) =>
+        [0, 1].map((other) => ({
+          active: other === index,
+          leaving: false,
+          opacity: other === index ? '1' : '0',
+        }));
+      const polling = { intervals: [100], timeout: 10000 };
+
+      // the first still fades in and then stands alone
+      await expect.poll(state, polling).toEqual(alone(0));
+      const heldAt = Date.now();
+
+      // nothing else shows during the hold; a timer never fires early, so a
+      // check well before the hold ends proves the still was never blended
+      await page.waitForTimeout(BACKGROUND_STILL_HOLD_SECONDS * 1000 - 1000);
+      expect(await state()).toEqual(alone(0));
+
+      // the dissolve: the next still fades in on top while the outgoing one
+      // stays whole underneath, so the picture never dips
+      await expect.poll(state, polling).toMatchObject([
+        { active: false, leaving: true, opacity: '1' },
+        { active: true, leaving: false },
+      ]);
+      expect(Date.now() - heldAt).toBeGreaterThanOrEqual(
+        BACKGROUND_STILL_HOLD_SECONDS * 1000 - 100
+      );
+
+      // then the second still stands alone in turn
+      await expect.poll(state, polling).toMatchObject([
+        { active: false, leaving: false },
+        { active: true, leaving: false, opacity: '1' },
+      ]);
+
+      await captureRoute(page, 'rmet-e2e-009', '/stills');
     }
   );
 });

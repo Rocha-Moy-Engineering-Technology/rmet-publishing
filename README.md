@@ -66,15 +66,17 @@ one without them renders as a plain piece.
 
 The landing page plays a video behind the content, fixed while you scroll and
 silent until you turn the sound on with the control in the corner. Screens
-narrower than 768 pixels never fetch the video; they cycle through still frames
-instead, with no sound control at all.
+narrower than 768 pixels never fetch the video; they show the still frames
+instead, each on its own for three seconds before the next dissolves in, with
+no sound control at all.
 
 The files go in `state/adapters/inbound/public/video/`:
 
 - `background.webm` and `background.mp4` — the same clip in both encodings
 - `background-poster.jpg` — the frame shown before playback starts
 - `background-still-1.webp` … `background-still-9.webp` — the frames a narrow
-  screen cycles through
+  screen cycles through, each cropped around the point `BACKGROUND_STILL_FOCUS`
+  in `logic/media/background_video.ts` names for its file
 
 Any of them may be missing, and with none of them present the backdrop simply
 does not render. Join and encode the clips before they land here: the file is

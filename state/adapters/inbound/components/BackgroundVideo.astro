@@ -13,15 +13,19 @@ const players = [0, 1];
   (hasVideo || hasStills) && (
     <>
       <div class="page-media" aria-hidden="true" data-testid="background-media">
-        {hasStills &&
-          media.stills.map((still, index) => (
-            <img
-              class:list={['page-media-still', index === 0 && 'is-active']}
-              data-src={siteHref(still)}
-              alt=""
-              decoding="async"
-            />
-          ))}
+        {hasStills && (
+          <div class="page-media-stills">
+            {media.stills.map((still) => (
+              <img
+                class="page-media-still"
+                data-src={siteHref(still.src)}
+                style={`object-position: ${still.focus}`}
+                alt=""
+                decoding="async"
+              />
+            ))}
+          </div>
+        )}
         {hasVideo &&
           players.map((index) => (
             <video
@@ -59,7 +63,8 @@ const players = [0, 1];
   import {
     BACKGROUND_HANDOVER_SECONDS,
     BACKGROUND_PLAYBACK_RATE,
-    BACKGROUND_STILL_SECONDS,
+    BACKGROUND_STILL_FADE_SECONDS,
+    BACKGROUND_STILL_HOLD_SECONDS,
     BACKGROUND_WIDE_VIEWPORT,
     nextStillIndex,
     shouldHandOver,
@@ -151,20 +156,44 @@ const players = [0, 1];
     requestAnimationFrame(watch);
   };
 
+  /** Resolves once a still can paint whole; a failed image just goes ahead. */
+  const ready = (image: HTMLImageElement): Promise<void> =>
+    image.decode().catch(() => undefined);
+
+  /** Dissolves the next still in over the current one once it has decoded. */
+  const advance = (current: number): void => {
+    const next = nextStillIndex(current, stills.length);
+    void ready(stills[next]).then(() => {
+      stills[current].classList.replace('is-active', 'is-leaving');
+      show(next, current);
+    });
+  };
+
+  /** Fades a still in, then holds it alone before the next one dissolves in. */
+  const show = (index: number, previous?: number): void => {
+    stills[index].classList.add('is-active');
+    window.setTimeout(() => {
+      if (previous !== undefined) {
+        stills[previous].classList.remove('is-leaving');
+      }
+      if (stills.length > 1 && !still.matches) {
+        window.setTimeout(
+          () => advance(index),
+          BACKGROUND_STILL_HOLD_SECONDS * 1000
+        );
+      }
+    }, BACKGROUND_STILL_FADE_SECONDS * 1000);
+  };
+
+  /** Attaches the stills and shows the first; narrow screens see these. */
   const startStills = (): void => {
     if (stills.length === 0) return;
     for (const image of stills) {
+      image.style.transitionDuration = `${BACKGROUND_STILL_FADE_SECONDS}s`;
       const href = image.dataset.src;
       if (href) image.src = href;
     }
-    if (stills.length < 2 || still.matches) return;
-    let current = 0;
-    window.setInterval(() => {
-      const next = nextStillIndex(current, stills.length);
-      stills[current].classList.remove('is-active');
-      stills[next].classList.add('is-active');
-      current = next;
-    }, BACKGROUND_STILL_SECONDS * 1000);
+    void ready(stills[0]).then(() => show(0));
   };
 
   control?.addEventListener('click', () => {

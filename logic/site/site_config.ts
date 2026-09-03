@@ -4,7 +4,7 @@ export const SITE: SiteConfig = {
   name: 'Pedro Henrique Rocha Moy',
   publicationTitle: 'Rocha Moy Engineering & Technology Blog',
   tagline:
-    'Artificial Intelligence, Machine Learning, Data Science, Data & Software Engineering',
+    'Engineering & Technology, Artificial Intelligence, Machine Learning, Data Science, Data & Software Engineering',
   description:
     'Writing on engineering, artificial intelligence, and the systems built with it.',
   author: 'Pedro Henrique Rocha Moy',

@@ -1,4 +1,8 @@
-import type { BackgroundMedia, BackgroundVideoSource } from '../../types/media';
+import type {
+  BackgroundMedia,
+  BackgroundStill,
+  BackgroundVideoSource,
+} from '../../types/media';
 
 export const BACKGROUND_VIDEO_DIRECTORY = '/video';
 export const BACKGROUND_VIDEO_BASENAME = 'background';
@@ -57,10 +61,43 @@ export function backgroundVideoCandidates(): readonly BackgroundVideoSource[] {
  */
 export const BACKGROUND_WIDE_VIEWPORT = '(min-width: 768px)';
 
-/** Seconds each still holds before the next one fades in. */
-export const BACKGROUND_STILL_SECONDS = 5;
+/**
+ * Seconds each still stands alone on a narrow screen before the next one
+ * dissolves in. Nothing else is blended with it during the hold.
+ */
+export const BACKGROUND_STILL_HOLD_SECONDS = 3;
+
+/**
+ * Seconds the next still takes to dissolve in over the current one. The
+ * outgoing still stays whole underneath for the whole dissolve, so the
+ * picture never dips; the script applies this as the stills' transition.
+ */
+export const BACKGROUND_STILL_FADE_SECONDS = 1;
 
 const MAX_STILLS = 9;
+
+/** Where a crop centres when a still names no focal point of its own. */
+export const BACKGROUND_STILL_DEFAULT_FOCUS = '50% 50%';
+
+/**
+ * The `object-position` a portrait screen crops each still around, by file.
+ * A phone shows only a slice of these wide frames, so a subject that stands
+ * off centre names where the slice goes: the space station crosses the right
+ * of its frame, the lunar lander stands at the right of its own, and Earth
+ * hangs behind the dish at the left of the lunar base.
+ */
+export const BACKGROUND_STILL_FOCUS: Readonly<Record<string, string>> = {
+  'background-still-1.webp': '80% 50%',
+  'background-still-2.webp': '94% 50%',
+  'background-still-4.webp': '29% 50%',
+};
+
+function still(file: string): BackgroundStill {
+  return {
+    src: mediaPath(file),
+    focus: BACKGROUND_STILL_FOCUS[file] ?? BACKGROUND_STILL_DEFAULT_FOCUS,
+  };
+}
 
 export function backgroundStillCandidates(): readonly string[] {
   return Array.from(
@@ -83,7 +120,7 @@ export function backgroundMedia(
   );
   const stills = backgroundStillCandidates()
     .filter((file) => present.has(file))
-    .map(mediaPath);
+    .map(still);
   const poster = present.has(BACKGROUND_POSTER_FILE)
     ? mediaPath(BACKGROUND_POSTER_FILE)
     : undefined;

@@ -8,6 +8,9 @@ describe('site configuration', () => {
     expect(SITE.publicationTitle).toBe(
       'Rocha Moy Engineering & Technology Blog'
     );
+    expect(SITE.tagline).toBe(
+      'Engineering & Technology, Artificial Intelligence, Machine Learning, Data Science, Data & Software Engineering'
+    );
     expect(SITE.author).toBe('Pedro Henrique Rocha Moy');
     expect(SITE.locale).toBe('en');
   });

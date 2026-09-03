@@ -3,7 +3,10 @@ import { describe, expect, test } from 'vitest';
 import {
   BACKGROUND_HANDOVER_SECONDS,
   BACKGROUND_JOIN_CROSSFADE_SECONDS,
-  BACKGROUND_STILL_SECONDS,
+  BACKGROUND_STILL_DEFAULT_FOCUS,
+  BACKGROUND_STILL_FADE_SECONDS,
+  BACKGROUND_STILL_FOCUS,
+  BACKGROUND_STILL_HOLD_SECONDS,
   BACKGROUND_WIDE_VIEWPORT,
   BACKGROUND_PLAYBACK_RATE,
   BACKGROUND_POSTER_FILE,
@@ -130,7 +133,7 @@ describe('stills for narrow screens', () => {
         'background-still-2.webp',
         'background-still-1.webp',
         'background-still-3.webp',
-      ]).stills
+      ]).stills.map((still) => still.src)
     ).toEqual([
       '/video/background-still-1.webp',
       '/video/background-still-2.webp',
@@ -140,8 +143,10 @@ describe('stills for narrow screens', () => {
 
   test('RMET-UNIT-194 keeps a gap in the numbering from breaking the sequence', () => {
     expect(
-      backgroundMedia(['background-still-1.webp', 'background-still-3.webp'])
-        .stills
+      backgroundMedia([
+        'background-still-1.webp',
+        'background-still-3.webp',
+      ]).stills.map((still) => still.src)
     ).toEqual([
       '/video/background-still-1.webp',
       '/video/background-still-3.webp',
@@ -168,8 +173,42 @@ describe('stills for narrow screens', () => {
     expect(nextStillIndex(3, -1)).toBe(0);
   });
 
-  test('RMET-UNIT-199 keeps the video for wide viewports only, and holds each still briefly', () => {
+  test('RMET-UNIT-199 keeps the video for wide viewports only', () => {
     expect(BACKGROUND_WIDE_VIEWPORT).toBe('(min-width: 768px)');
-    expect(BACKGROUND_STILL_SECONDS).toBeGreaterThan(1);
+  });
+
+  test('RMET-UNIT-201 crops a portrait screen around the subject of each still', () => {
+    // the lunar lander stands at the right of its frame; a centred crop
+    // would show Earth and the ground and lose the lander
+    expect(BACKGROUND_STILL_FOCUS['background-still-2.webp']).toBe('94% 50%');
+    // Earth hangs behind the dish at the left of the lunar base frame
+    expect(BACKGROUND_STILL_FOCUS['background-still-4.webp']).toBe('29% 50%');
+    // the satellites frame stays centred
+    expect(BACKGROUND_STILL_FOCUS['background-still-3.webp']).toBeUndefined();
+    expect(backgroundMedia(['background-still-3.webp']).stills[0].focus).toBe(
+      BACKGROUND_STILL_DEFAULT_FOCUS
+    );
+    const stills = backgroundMedia([
+      'background-still-1.webp',
+      'background-still-2.webp',
+    ]).stills;
+    // the space station crosses the right of its frame
+    expect(stills[0]).toEqual({
+      src: '/video/background-still-1.webp',
+      focus: '80% 50%',
+    });
+    expect(stills[1]).toEqual({
+      src: '/video/background-still-2.webp',
+      focus: '94% 50%',
+    });
+    expect(BACKGROUND_STILL_DEFAULT_FOCUS).toBe('50% 50%');
+  });
+
+  test('RMET-UNIT-200 holds each still alone for three seconds, then dissolves for no longer than that', () => {
+    expect(BACKGROUND_STILL_HOLD_SECONDS).toBe(3);
+    expect(BACKGROUND_STILL_FADE_SECONDS).toBeGreaterThan(0);
+    expect(BACKGROUND_STILL_FADE_SECONDS).toBeLessThanOrEqual(
+      BACKGROUND_STILL_HOLD_SECONDS
+    );
   });
 });
