@@ -3,6 +3,8 @@ import { createBdd, test } from 'playwright-bdd';
 
 import {
   FIXTURE_CONTENT_DIR,
+  FIXTURE_SUBSCRIBE_ACTION,
+  FIXTURE_SUBSCRIBE_EMAIL_FIELD,
   captureRoute,
   withBuiltRuntime,
   type Runtime,
@@ -10,9 +12,12 @@ import {
 
 const { Given, When, Then, After } = createBdd(test);
 
+const READER_EMAIL = 'reader@example.com';
+
 let runtime: Runtime | undefined;
 let finish: (() => void) | undefined;
 let running: Promise<unknown> | undefined;
+let providerPost: string | undefined;
 
 Given('the published site is running', async () => {
   const started = new Promise<Runtime>((resolveStarted) => {
@@ -20,7 +25,11 @@ Given('the published site is running', async () => {
       finish = resolveClosed;
     });
     running = withBuiltRuntime(
-      { contentDir: FIXTURE_CONTENT_DIR },
+      {
+        contentDir: FIXTURE_CONTENT_DIR,
+        subscribeAction: FIXTURE_SUBSCRIBE_ACTION,
+        subscribeEmailField: FIXTURE_SUBSCRIBE_EMAIL_FIELD,
+      },
       async (started) => {
         resolveStarted(started);
         await closed;
@@ -135,3 +144,37 @@ Then('the site records the chosen theme', async ({ page }) => {
   expect(stored === 'dark' || stored === 'light').toBe(true);
   await captureRoute(page, 'rmet-bdd-005', '/theme');
 });
+
+Then('the landing page offers an email subscription', async ({ page }) => {
+  const form = page.locator('[data-testid="subscribe"] form');
+  await expect(form).toBeVisible();
+  await expect(form).toHaveAttribute('action', FIXTURE_SUBSCRIBE_ACTION);
+  await captureRoute(page, 'rmet-bdd-006', '/subscribe');
+});
+
+When('the reader enters an email address and subscribes', async ({ page }) => {
+  providerPost = undefined;
+  await page.context().route(FIXTURE_SUBSCRIBE_ACTION, async (route) => {
+    providerPost = route.request().postData() ?? undefined;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<p>Subscribed</p>',
+    });
+  });
+  const form = page.locator('[data-testid="subscribe"] form');
+  await form.locator('input[type="email"]').fill(READER_EMAIL);
+  const popup = page.waitForEvent('popup');
+  await form.locator('button[type="submit"]').click();
+  await (await popup).waitForLoadState();
+});
+
+Then(
+  'the subscription reaches the provider with that address',
+  async ({ page }) => {
+    expect(providerPost).toBeDefined();
+    const fields = new URLSearchParams(providerPost);
+    expect(fields.get(FIXTURE_SUBSCRIBE_EMAIL_FIELD)).toBe(READER_EMAIL);
+    await captureRoute(page, 'rmet-bdd-006', '/subscribed');
+  }
+);

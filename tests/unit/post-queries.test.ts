@@ -2,11 +2,9 @@ import { describe, expect, test } from 'vitest';
 
 import {
   collectTags,
-  findPost,
-  latestPosts,
-  newestFirst,
+  comparePostsByRecency,
+  isPublished,
   postsWithTag,
-  publishedPosts,
 } from '../../logic/posts/post_queries';
 import { makePost } from '../support/post-fixture';
 
@@ -36,10 +34,9 @@ const sameDay = makePost({
 });
 
 describe('post queries', () => {
-  test('RMET-UNIT-080 drops drafts', () => {
-    expect(publishedPosts([older, draft]).map((post) => post.slug)).toEqual([
-      'older',
-    ]);
+  test('RMET-UNIT-081 tells a published piece from a draft', () => {
+    expect(isPublished(older)).toBe(true);
+    expect(isPublished(draft)).toBe(false);
   });
 
   test('RMET-UNIT-082 keeps only the pieces carrying a tag', () => {
@@ -51,28 +48,18 @@ describe('post queries', () => {
   });
 
   test('RMET-UNIT-083 orders the newest piece first', () => {
-    expect(newestFirst([older, newer]).map((post) => post.slug)).toEqual([
-      'newer',
-      'older',
-    ]);
+    expect(comparePostsByRecency(newer, older)).toBeLessThan(0);
+    expect(comparePostsByRecency(older, newer)).toBeGreaterThan(0);
+    expect(
+      [older, newer].sort(comparePostsByRecency).map((post) => post.slug)
+    ).toEqual(['newer', 'older']);
   });
 
   test('RMET-UNIT-084 breaks a same-day tie by title', () => {
-    expect(newestFirst([newer, sameDay]).map((post) => post.slug)).toEqual([
-      'a-same-day',
-      'newer',
-    ]);
-  });
-
-  test('RMET-UNIT-085 leaves the input untouched when ordering', () => {
-    const input = [older, newer];
-    newestFirst(input);
-    expect(input.map((post) => post.slug)).toEqual(['older', 'newer']);
-  });
-
-  test('RMET-UNIT-086 takes the newest few pieces', () => {
+    expect(comparePostsByRecency(sameDay, newer)).toBeLessThan(0);
+    expect(comparePostsByRecency(newer, newer)).toBe(0);
     expect(
-      latestPosts([older, newer, sameDay], 2).map((post) => post.slug)
+      [newer, sameDay].sort(comparePostsByRecency).map((post) => post.slug)
     ).toEqual(['a-same-day', 'newer']);
   });
 
@@ -104,10 +91,5 @@ describe('post queries', () => {
       'Agents',
       'Zebra',
     ]);
-  });
-
-  test('RMET-UNIT-091 finds one piece by slug', () => {
-    expect(findPost([older, newer], 'newer')?.title).toBe('Newer');
-    expect(findPost([older, newer], 'missing')).toBeUndefined();
   });
 });

@@ -61,6 +61,8 @@ jobs:
           PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
           PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY }}
           PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
+          PUBLIC_SUBSCRIBE_ACTION: ${{ vars.PUBLIC_SUBSCRIBE_ACTION }}
+          PUBLIC_SUBSCRIBE_EMAIL_FIELD: ${{ vars.PUBLIC_SUBSCRIBE_EMAIL_FIELD }}
         run: npm run build
 
       - name: Upload the built site

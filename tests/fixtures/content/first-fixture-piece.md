@@ -9,4 +9,5 @@ authors: ['Test Author']
 ## A heading
 
 Body copy for the fixture piece, long enough to render a paragraph and prove the
-prose styles apply.
+prose styles apply. It links to [the fixture paper](/papers/fixture.pdf) by a
+root-relative address, which the feed must make absolute.

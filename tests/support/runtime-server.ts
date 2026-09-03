@@ -18,9 +18,28 @@ const FEED_ROUTES = [
 export const BASE_PATH_FIXTURE = '/rmet-publishing';
 export const FIXTURE_CONTENT_DIR = 'tests/fixtures/content';
 export const FIXTURE_ASSETS_DIR = 'tests/fixtures/public';
+/** A provider address the suites intercept; nothing is ever sent to it. */
+export const FIXTURE_SUBSCRIBE_ACTION = 'https://subscribe.example/form';
+export const FIXTURE_SUBSCRIBE_EMAIL_FIELD = 'email_address';
 const BUILD_ROOT = 'test-results/built-site';
 
 export type Runtime = { baseURL: string; basePath: string };
+
+export type BuildOptions = {
+  basePath?: string;
+  contentDir?: string;
+  assetsDir?: string;
+  subscribeAction?: string;
+  subscribeEmailField?: string;
+};
+
+const BUILD_VARIABLES: Readonly<Record<keyof BuildOptions, string>> = {
+  basePath: 'PUBLIC_BASE_PATH',
+  contentDir: 'PUBLIC_CONTENT_DIR',
+  assetsDir: 'PUBLIC_ASSETS_DIR',
+  subscribeAction: 'PUBLIC_SUBSCRIBE_ACTION',
+  subscribeEmailField: 'PUBLIC_SUBSCRIBE_EMAIL_FIELD',
+};
 
 type Process = {
   baseURL: string;
@@ -79,12 +98,12 @@ export async function withRuntime<T>(
  * serves it the way a static host would, then tears both down.
  */
 export async function withBuiltRuntime<T>(
-  options: { basePath?: string; contentDir?: string; assetsDir?: string },
+  options: BuildOptions,
   action: (runtime: Runtime) => Promise<T>
 ): Promise<T> {
   const basePath = options.basePath ?? '';
   const outDir = `${BUILD_ROOT}${basePath}`;
-  await build(outDir, basePath, options.contentDir, options.assetsDir);
+  await build(outDir, options);
   const port = await getPort();
   const child = spawn(
     'npx',
@@ -104,20 +123,19 @@ export async function withBuiltRuntime<T>(
   }
 }
 
-async function build(
-  outDir: string,
-  basePath: string,
-  contentDir?: string,
-  assetsDir?: string
-): Promise<void> {
+function buildEnvironment(options: BuildOptions): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  for (const [option, variable] of Object.entries(BUILD_VARIABLES)) {
+    const value = options[option as keyof BuildOptions];
+    if (value) env[variable] = value;
+  }
+  return env;
+}
+
+async function build(outDir: string, options: BuildOptions): Promise<void> {
   const child = spawn('npx', ['astro', 'build', '--outDir', outDir], {
     cwd: process.cwd(),
-    env: {
-      ...process.env,
-      ...(basePath ? { PUBLIC_BASE_PATH: basePath } : {}),
-      ...(contentDir ? { PUBLIC_CONTENT_DIR: contentDir } : {}),
-      ...(assetsDir ? { PUBLIC_ASSETS_DIR: assetsDir } : {}),
-    },
+    env: buildEnvironment(options),
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';

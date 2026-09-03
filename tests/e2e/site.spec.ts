@@ -16,6 +16,16 @@ import {
   withRuntime,
 } from '../support/runtime-server';
 
+/** One entry the page records about a still, stamped by the browser clock. */
+type StillEvent = {
+  at: number;
+  still: number;
+  kind: 'class' | 'transitionend';
+  classes: string;
+};
+
+type StillWindow = { stillTimeline: StillEvent[] };
+
 test('RMET-E2E-001 navigates from the landing page into a piece', async ({
   page,
 }) => {
@@ -29,6 +39,7 @@ test('RMET-E2E-001 navigates from the landing page into a piece', async ({
       await firstCard.click();
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('article h1')).toHaveText(title);
+      await expect(page.locator('[data-testid="subscribe"]')).toBeVisible();
       await expect(page.locator('[data-testid="comments"]')).toBeVisible();
       expect(page.url()).toContain('/writings/');
       await captureRoute(page, 'rmet-e2e-001', '/piece');
@@ -114,7 +125,12 @@ test('RMET-E2E-005 serves every internal link under a project base path', async 
 
       const feed = await page.request.get(`${baseURL}${basePath}/rss.xml`);
       expect(feed.status()).toBe(200);
-      expect(await feed.text()).toContain(`${basePath}/writings/`);
+      const feedText = await feed.text();
+      expect(feedText).toContain(`${basePath}/writings/`);
+      // a root-relative link inside a body carries the base path in the feed
+      expect(feedText).toContain(
+        `href=&quot;http://localhost:4321${basePath}/papers/fixture.pdf&quot;`
+      );
     }
   );
 });
@@ -257,6 +273,45 @@ test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in t
   await withBuiltRuntime(
     { contentDir: FIXTURE_CONTENT_DIR, assetsDir: FIXTURE_ASSETS_DIR },
     async ({ baseURL }) => {
+      // the page keeps its own timeline of the stills from before any script
+      // runs: every class change and every finished opacity transition,
+      // stamped by the browser clock, so no poll interval blurs the timing
+      await page.addInitScript(() => {
+        const timeline: StillEvent[] = [];
+        (window as unknown as StillWindow).stillTimeline = timeline;
+        const isStill = (node: EventTarget | null): node is Element =>
+          node instanceof Element &&
+          node.classList.contains('page-media-still');
+        const record = (node: Element, kind: StillEvent['kind']): void => {
+          timeline.push({
+            at: performance.now(),
+            still: Array.from(
+              document.querySelectorAll('.page-media-still')
+            ).indexOf(node),
+            kind,
+            classes: node.className,
+          });
+        };
+        new MutationObserver((records) => {
+          for (const { target } of records) {
+            if (isStill(target)) record(target, 'class');
+          }
+        }).observe(document, {
+          attributes: true,
+          attributeFilter: ['class'],
+          subtree: true,
+        });
+        document.addEventListener(
+          'transitionend',
+          (event) => {
+            if (event.propertyName === 'opacity' && isStill(event.target)) {
+              record(event.target, 'transitionend');
+            }
+          },
+          true
+        );
+      });
+
       await page.goto(`${baseURL}/`);
       const stills = page.locator('.page-media-still');
       await expect(stills).toHaveCount(2);
@@ -304,7 +359,6 @@ test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in t
 
       // the first still fades in and then stands alone
       await expect.poll(state, polling).toEqual(alone(0));
-      const heldAt = Date.now();
 
       // nothing else shows during the hold; a timer never fires early, so a
       // check well before the hold ends proves the still was never blended
@@ -317,9 +371,33 @@ test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in t
         { active: false, leaving: true, opacity: '1' },
         { active: true, leaving: false },
       ]);
-      expect(Date.now() - heldAt).toBeGreaterThanOrEqual(
+
+      // the hold is timed by the page itself, from the first still's fade
+      // ending to the second still being switched on. The hold timer starts
+      // on the tick the fade timer ends, a frame or so before the transition
+      // reports its end, and a timer only ever fires late, so the page can
+      // read short by a few frames at most and never by a poll interval
+      const timeline = await page.evaluate(
+        () => (window as unknown as StillWindow).stillTimeline
+      );
+      const aloneAt = timeline.find(
+        (event) => event.still === 0 && event.kind === 'transitionend'
+      )?.at;
+      const dissolveAt = timeline.find(
+        (event) => event.still === 1 && event.classes.includes('is-active')
+      )?.at;
+      if (aloneAt === undefined || dissolveAt === undefined) {
+        throw new Error(`Timeline incomplete: ${JSON.stringify(timeline)}`);
+      }
+      expect(dissolveAt - aloneAt).toBeGreaterThanOrEqual(
         BACKGROUND_STILL_HOLD_SECONDS * 1000 - 100
       );
+      // and nothing touched the second still before that moment
+      expect(
+        timeline
+          .filter((event) => event.at < dissolveAt)
+          .every((event) => event.still === 0)
+      ).toBe(true);
 
       // then the second still stands alone in turn
       await expect.poll(state, polling).toMatchObject([
@@ -328,6 +406,46 @@ test('RMET-E2E-009 holds each still alone for three seconds, then dissolves in t
       ]);
 
       await captureRoute(page, 'rmet-e2e-009', '/stills');
+    }
+  );
+});
+
+test('RMET-E2E-010 offers the feed in place of the form while no provider is configured', async ({
+  page,
+}) => {
+  await withRuntime(async ({ baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    const section = page.locator('[data-testid="subscribe"]');
+    await expect(section).toBeVisible();
+    await expect(section.locator('form')).toHaveCount(0);
+    await expect(section.locator('a[href="/rss.xml"]')).toBeVisible();
+    await captureRoute(page, 'rmet-e2e-010', '/subscribe-unconfigured');
+  });
+});
+
+test('RMET-E2E-011 carries the rendered body of every piece in the feed', async ({
+  request,
+}) => {
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR },
+    async ({ baseURL }) => {
+      const response = await request.get(`${baseURL}/rss.xml`);
+      expect(response.status()).toBe(200);
+      const feed = await response.text();
+      expect(feed).toContain(
+        'xmlns:content="http://purl.org/rss/1.0/modules/content/"'
+      );
+      expect(feed.split('<content:encoded>').length - 1).toBe(
+        feed.split('<item>').length - 1
+      );
+      // the Markdown body arrives rendered, markup escaped for the XML
+      expect(feed).toContain('&lt;h2 id=&quot;a-heading&quot;&gt;A heading');
+      // the MDX body arrives evaluated, not as source
+      expect(feed).toContain('two plus two as 4');
+      // a root-relative link in a body is absolute in the feed
+      expect(feed).toContain(
+        'href=&quot;http://localhost:4321/papers/fixture.pdf&quot;'
+      );
     }
   );
 });

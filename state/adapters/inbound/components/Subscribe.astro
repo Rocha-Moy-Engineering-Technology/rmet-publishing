@@ -1,0 +1,77 @@
+---
+import { resolveSubscribeSettings } from '../../../../logic/subscribe/subscribe_settings';
+import { siteEnvironment } from '../../outbound/environment/site_environment';
+import { siteHref } from '../site_links';
+
+const settings = resolveSubscribeSettings(siteEnvironment().snapshot());
+const feedHref = siteHref('/rss.xml');
+---
+
+<section
+  id="subscribe"
+  data-testid="subscribe"
+  aria-labelledby="subscribe-heading"
+  class="mt-20 border-t border-line pt-10"
+>
+  <h2 id="subscribe-heading" class="display text-xl">New writing by email</h2>
+  {
+    settings ? (
+      <>
+        <p class="mt-3 text-sm text-muted">
+          One email for each new piece as it is published, and nothing else.
+          Unsubscribe with the link in any of them.
+        </p>
+        <form
+          action={settings.action}
+          method="post"
+          target="_blank"
+          class="mt-6 flex max-w-lg flex-col gap-3 sm:flex-row"
+        >
+          <label for="subscribe-email" class="sr-only">
+            Email address
+          </label>
+          <input
+            id="subscribe-email"
+            type="email"
+            name={settings.emailField}
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="field flex-1"
+          />
+          <button type="submit" class="chip cursor-pointer">
+            Subscribe
+          </button>
+        </form>
+        <p class="mt-4 text-sm text-muted">
+          Or follow the{' '}
+          <a
+            href={feedHref}
+            class="underline decoration-line underline-offset-4 hover:text-ink"
+          >
+            feed
+          </a>
+          .
+        </p>
+      </>
+    ) : (
+      <div class="mt-5 border border-line p-5">
+        <p class="text-muted">
+          Email subscriptions are not connected yet. Set{' '}
+          <code class="font-mono text-sm">PUBLIC_SUBSCRIBE_ACTION</code> to a
+          provider's form address to switch them on.
+        </p>
+        <p class="mt-3 text-muted">
+          Until then, follow the{' '}
+          <a
+            href={feedHref}
+            class="underline decoration-line underline-offset-4 hover:text-ink"
+          >
+            feed
+          </a>{' '}
+          to catch every new piece.
+        </p>
+      </div>
+    )
+  }
+</section>

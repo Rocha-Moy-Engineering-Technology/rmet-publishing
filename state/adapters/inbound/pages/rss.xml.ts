@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 
+import { absolutizeRootLinks } from '../../../../logic/feed/feed_links';
 import { buildRssFeed } from '../../../../logic/feed/rss_feed';
 import { absoluteUrl, postPath } from '../../../../logic/posts/post_routes';
 import { SITE } from '../../../../logic/site/site_config';
@@ -10,18 +11,20 @@ export const prerender = true;
 
 export const GET: APIRoute = async ({ site }) => {
   const base = site?.href ?? SITE.defaultSiteUrl;
-  const posts = await postRepository().listPosts();
+  const resolve = (path: string): string => absoluteUrl(base, siteHref(path));
+  const posts = await postRepository().listRenderedPosts();
   const feed = buildRssFeed(
     {
       title: SITE.publicationTitle,
-      link: absoluteUrl(base, siteHref('/')),
+      link: resolve('/'),
       description: SITE.description,
       language: SITE.locale,
     },
-    posts.map((post) => ({
+    posts.map(({ post, html }) => ({
       title: post.title,
-      link: absoluteUrl(base, siteHref(postPath(post))),
+      link: resolve(postPath(post)),
       description: post.description,
+      content: absolutizeRootLinks(html, resolve),
       publishedAt: post.publishedAt,
     }))
   );

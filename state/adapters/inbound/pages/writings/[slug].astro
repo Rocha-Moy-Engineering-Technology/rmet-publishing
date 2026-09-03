@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Comments from '../../components/Comments.astro';
+import Subscribe from '../../components/Subscribe.astro';
 import TagChips from '../../components/TagChips.astro';
 import { formatCitation } from '../../../../../logic/posts/citation';
 import {
@@ -113,6 +114,7 @@ const citation = formatCitation(post, {
       )
     }
 
+    <Subscribe />
     <Comments term={`${WRITINGS_SEGMENT}/${post.slug}`} />
   </article>
 </BaseLayout>

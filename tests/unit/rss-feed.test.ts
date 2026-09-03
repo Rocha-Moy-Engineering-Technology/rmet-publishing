@@ -13,6 +13,7 @@ const item = {
   title: 'On evaluation',
   link: 'https://example.org/papers/on-evaluation',
   description: 'Measuring agents.',
+  content: '<h2 id="scope">Scope</h2>\n<p>Agents &amp; "tools".</p>',
   publishedAt: new Date('2026-09-01T12:05:09.000Z'),
 };
 
@@ -46,5 +47,15 @@ describe('really simple syndication feed', () => {
     const feed = buildRssFeed(channel, []);
     expect(feed).toContain('</channel>');
     expect(feed).not.toContain('<item>');
+  });
+
+  test('RMET-UNIT-124 carries the rendered body of each entry, escaped, under the content namespace', () => {
+    const feed = buildRssFeed(channel, [item]);
+    expect(feed).toContain(
+      '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">'
+    );
+    expect(feed).toContain(
+      '<content:encoded>&lt;h2 id=&quot;scope&quot;&gt;Scope&lt;/h2&gt;\n&lt;p&gt;Agents &amp;amp; &quot;tools&quot;.&lt;/p&gt;</content:encoded>'
+    );
   });
 });

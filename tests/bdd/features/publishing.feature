@@ -26,3 +26,10 @@ Feature: Reading and engaging with published writing
     When the reader opens the landing page
     And the reader activates the theme toggle
     Then the site records the chosen theme
+
+  Scenario: RMET-BDD-006 a reader subscribes to hear about new writing
+    When the reader opens the landing page
+    Then the landing page offers an email subscription
+    When the reader opens the first piece on the landing page
+    And the reader enters an email address and subscribes
+    Then the subscription reaches the provider with that address

@@ -1,8 +1,9 @@
 import { slugify } from '../text/slugify';
 import type { Post, TagCount } from '../../types/post';
 
-export function publishedPosts(posts: readonly Post[]): readonly Post[] {
-  return posts.filter((post) => !post.draft);
+/** The one rule that keeps a piece out of every generated output. */
+export function isPublished(post: Post): boolean {
+  return !post.draft;
 }
 
 export function postsWithTag(
@@ -12,24 +13,6 @@ export function postsWithTag(
   return posts.filter((post) =>
     post.tags.some((tag) => slugify(tag) === tagSlug)
   );
-}
-
-export function newestFirst(posts: readonly Post[]): readonly Post[] {
-  return [...posts].sort(comparePostsByRecency);
-}
-
-export function latestPosts(
-  posts: readonly Post[],
-  count: number
-): readonly Post[] {
-  return newestFirst(posts).slice(0, count);
-}
-
-export function findPost(
-  posts: readonly Post[],
-  slug: string
-): Post | undefined {
-  return posts.find((post) => post.slug === slug);
 }
 
 export function collectTags(posts: readonly Post[]): readonly TagCount[] {
@@ -59,6 +42,7 @@ function addTag(counts: Map<string, TagCount>, tag: string): void {
   });
 }
 
+/** Newest first; two pieces from the same day fall back to title order. */
 export function comparePostsByRecency(first: Post, second: Post): number {
   const byDate = second.publishedAt.getTime() - first.publishedAt.getTime();
   return byDate === 0 ? first.title.localeCompare(second.title) : byDate;

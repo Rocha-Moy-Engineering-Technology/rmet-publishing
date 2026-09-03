@@ -9,6 +9,8 @@ export interface FeedItem {
   readonly title: string;
   readonly link: string;
   readonly description: string;
+  /** The rendered body as HTML, with every address absolute. */
+  readonly content: string;
   readonly publishedAt: Date;
 }
 

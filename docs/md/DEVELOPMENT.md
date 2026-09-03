@@ -20,7 +20,7 @@ npm run start
 
 ## Source layout
 
-- `logic/` holds pure functions only: post filtering and ordering, routing, tag counting, date formatting, reading time, citation formatting, Really Simple Syndication (RSS) and sitemap serialization, contact-address handling, and Giscus settings resolution. Nothing here performs input or output.
+- `logic/` holds pure functions only: post filtering and ordering, routing, tag counting, date formatting, reading time, citation formatting, Really Simple Syndication (RSS) and sitemap serialization, contact-address handling, Giscus settings resolution, and subscription settings resolution. Nothing here performs input or output.
 - `types/` holds contracts, including the ports `types/ports/post_repository.ts` and `types/ports/environment_reader.ts`.
 - `state/adapters/outbound/` holds the production adapters: the content-collection repository and the environment reader.
 - `state/adapters/inbound/` is the Astro `srcDir`. It holds `content.config.ts`, the Markdown content, layouts, components, and pages.
@@ -57,7 +57,7 @@ The landing page, and only the landing page, carries a fixed video backdrop. `Ba
 - `prefers-reduced-motion` holds the muted backdrop on a single frame and stops the stills from cycling.
 - `PUBLIC_ASSETS_DIR` overrides the static asset directory at build time. The browser suites use it to build from `tests/fixtures/public`, so no suite ever loads the real media.
 - The fixture clip `tests/fixtures/public/video/background.webm` is thirty seconds of silent VP9 and Opus made with `ffmpeg` from its `color` and `anullsrc` sources. It must stay far longer than `BACKGROUND_HANDOVER_SECONDS`: `RMET-E2E-007` drives the loop point itself and asserts on the standby player before the clip's own handover, and it fails on a clip shorter than ten handover windows.
-- `RMET-E2E-007` covers a wide screen: two players, muted, not looping, fixed, playing, at the configured rate, with a sound control that unmutes. `RMET-E2E-008` covers a 390 by 844 screen: an active still, no `.webm` or `.mp4` request, an empty `currentSrc`, and a hidden sound control. `RMET-E2E-009` covers the still cycle on that screen: the treatment on the group, one still alone through the hold, the dissolve with the outgoing still whole underneath, then the next still alone.
+- `RMET-E2E-007` covers a wide screen: two players, muted, not looping, fixed, playing, at the configured rate, with a sound control that unmutes. `RMET-E2E-008` covers a 390 by 844 screen: an active still, no `.webm` or `.mp4` request, an empty `currentSrc`, and a hidden sound control. `RMET-E2E-009` covers the still cycle on that screen: the treatment on the group, one still alone through the hold, the dissolve with the outgoing still whole underneath, then the next still alone. The hold is timed by the page itself: an init script records every still class change and finished opacity transition with `performance.now()`, and the test reads that timeline, so a poll interval never shortens the measured hold.
 
 ## Environment
 
@@ -66,6 +66,7 @@ Copy `.env.example` to `.env` and fill in the values.
 - `PUBLIC_SITE_URL` is the public address of the deployment. It sets `site` in `astro.config.mjs` and drives canonical links, the feed, and the sitemap. Without it the build falls back to the default in `logic/site/site_config.ts`.
 - `PUBLIC_CONTACT_EMAIL` overrides the contact address. The address is split into parts at build time and assembled by a small browser script, so it does not appear whole in the page source.
 - `PUBLIC_GISCUS_REPO`, `PUBLIC_GISCUS_REPO_ID`, `PUBLIC_GISCUS_CATEGORY`, and `PUBLIC_GISCUS_CATEGORY_ID` switch on comments and reactions. All four are required; if any is missing the comment section renders a panel explaining how to enable them.
+- `PUBLIC_SUBSCRIBE_ACTION` switches on the email subscription form. It must be an `https://` address; any other value fails the build with an error naming the variable, because a form that posts to a relative or plain-text address would ship silently broken. `PUBLIC_SUBSCRIBE_EMAIL_FIELD` names the field the provider reads the address under and defaults to `email`. Without the action the section renders a panel pointing at the feed.
 
 ## Comments and reactions
 
@@ -74,6 +75,18 @@ Copy `.env.example` to `.env` and fill in the values.
 3. Generate the four values at `https://giscus.app` and set them as `PUBLIC_GISCUS_*` variables in the deployment environment.
 
 Comment threads map to discussions by the piece address, for example `papers/paper-template`. The reaction bar on each discussion is the like mechanism. The theme toggle retunes the embedded thread through a `postMessage` call.
+
+## Subscriptions
+
+The site has no server, so notification rides on the feed: an RSS-to-email provider polls `/rss.xml` and emails every subscriber when a new item appears. The site only collects the address, and it never stores one, so unsubscribing is the provider's job: every email it sends carries an unsubscribe link, and the form promises exactly that.
+
+1. Create a newsletter at a provider with an RSS-to-email feature and point that feature at `<PUBLIC_SITE_URL><PUBLIC_BASE_PATH>/rss.xml`. Buttondown is the recommended one: its automation checks the feed every thirty minutes, and every email carries a one-click unsubscribe link plus the `List-Unsubscribe` header mail clients surface as an Unsubscribe button.
+2. Set `PUBLIC_SUBSCRIBE_ACTION` to the provider's form-post address (Buttondown: `https://buttondown.com/api/emails/embed-subscribe/<newsletter>`), and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the provider reads a field other than `email` (Kit `email_address`, Mailchimp `EMAIL`).
+3. Publish a piece. The feed carries it on the next build and the provider's next poll sends the email.
+
+The feed carries each piece in full so the provider's template can send the whole piece (`item.content`) or only a teaser (`item.title`, `item.description`, `item.url`). `listRenderedPosts` in `state/adapters/outbound/content/post_content_repository.ts` renders every published body to HTML outside a page through Astro's container API: the glob loader pre-renders Markdown only, and an MDX body is a component tagged for the `astro:jsx` renderer, so the container is created once with `@astrojs/mdx/server.js` registered through `addServerRenderer`. `logic/feed/feed_links.ts` then rewrites every root-relative `href` and `src` to an absolute address carrying the site address and base path, because a relative link is dead once the body leaves the site, and `logic/feed/rss_feed.ts` writes the result escaped under `content:encoded` with the `content` namespace declared on the `rss` element. `RMET-UNIT-124` pins the serialization, `RMET-UNIT-220` to `RMET-UNIT-225` pin the link rewriting, `RMET-E2E-011` reads the built feed (escaped Markdown heading, evaluated MDX, absolute link), and `RMET-E2E-005` checks the link carries the base path.
+
+`Subscribe.astro` renders the section on the landing page and on every piece page, before the comments. The form is plain HTML: `method="post"` to the action with one `type="email"` input named by the field variable, submitted in a new tab so the provider's confirmation page does not replace the piece. `logic/subscribe/subscribe_settings.ts` resolves the two variables. `RMET-BDD-006` builds with fixture variables, intercepts the post in the browser, and checks the address lands under the configured field; `RMET-E2E-010` covers the unconfigured panel on the production build; `RMET-SMOKE-002` checks the section is served beside the feed.
 
 ## Browser test suites
 
@@ -95,7 +108,7 @@ value.
 
 ## Browser suite fixtures
 
-The repository ships no content, so the browser suites build their own. `withBuiltRuntime` in `tests/support/runtime-server.ts` runs a build with `PUBLIC_CONTENT_DIR=tests/fixtures/content` (and optionally `PUBLIC_ASSETS_DIR=tests/fixtures/public`, or a base path) into `test-results/built-site`, serves it as a static host would, and tears both down. `withRuntime` serves the real production build, which exercises the empty state.
+The repository ships no content, so the browser suites build their own. `withBuiltRuntime` in `tests/support/runtime-server.ts` runs a build with `PUBLIC_CONTENT_DIR=tests/fixtures/content` (and optionally `PUBLIC_ASSETS_DIR=tests/fixtures/public`, a base path, or the two `PUBLIC_SUBSCRIBE_*` values pointed at an address the suite intercepts) into `test-results/built-site`, serves it as a static host would, and tears both down. `withRuntime` serves the real production build, which exercises the empty state.
 
 ## Deployment to GitHub Pages
 
@@ -109,7 +122,7 @@ The repository ships no content, so the browser suites build their own. `withBui
 Repository configuration:
 
 - Settings, Pages, Source must be set to GitHub Actions.
-- Repository variables supply `PUBLIC_CONTACT_EMAIL` and the four `PUBLIC_GISCUS_*` values. They are public values, so variables rather than secrets are correct. A build with none of them set still succeeds.
+- Repository variables supply `PUBLIC_CONTACT_EMAIL`, the four `PUBLIC_GISCUS_*` values, and the two `PUBLIC_SUBSCRIBE_*` values. They are public values, so variables rather than secrets are correct. A build with none of them set still succeeds.
 - `state/adapters/inbound/public/` is the static asset directory; it holds `.nojekyll` and is the place for files referenced by `pdfUrl`.
 
 There is no lock file in the repository, so the workflow runs `npm install`. Committing `package-lock.json` would make the dependency set reproducible and let the workflow cache it.

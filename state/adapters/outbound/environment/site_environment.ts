@@ -14,6 +14,9 @@ export function siteEnvironment(): EnvironmentReader {
         PUBLIC_GISCUS_REPO_ID: import.meta.env.PUBLIC_GISCUS_REPO_ID,
         PUBLIC_GISCUS_CATEGORY: import.meta.env.PUBLIC_GISCUS_CATEGORY,
         PUBLIC_GISCUS_CATEGORY_ID: import.meta.env.PUBLIC_GISCUS_CATEGORY_ID,
+        PUBLIC_SUBSCRIBE_ACTION: import.meta.env.PUBLIC_SUBSCRIBE_ACTION,
+        PUBLIC_SUBSCRIBE_EMAIL_FIELD: import.meta.env
+          .PUBLIC_SUBSCRIBE_EMAIL_FIELD,
       };
     },
   };

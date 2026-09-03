@@ -34,6 +34,12 @@ export interface Post {
   readonly readingMinutes: number;
 }
 
+export interface RenderedPost {
+  readonly post: Post;
+  /** The body rendered to HTML, links as written in the source. */
+  readonly html: string;
+}
+
 export interface TagCount {
   readonly tag: string;
   readonly slug: string;

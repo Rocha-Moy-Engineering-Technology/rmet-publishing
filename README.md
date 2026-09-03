@@ -1,7 +1,8 @@
 # rmet-publishing
 
 An Astro 7.2 static site for publishing writing, with reader comments and
-reactions through GitHub Discussions.
+reactions through GitHub Discussions, and email notification of every new
+piece through a Really Simple Syndication (RSS) to email provider.
 
 ## Routes
 
@@ -62,6 +63,40 @@ Every piece uses the same shape. A piece carrying an abstract, a Digital Object
 Identifier (DOI), or a Portable Document Format (PDF) link renders those extras;
 one without them renders as a plain piece.
 
+## Subscriptions
+
+The landing page and every piece end with a "New writing by email" form. It
+posts the reader's address straight to an RSS-to-email provider; the provider
+watches `/rss.xml` and emails every subscriber when a new piece appears there.
+Publishing is the only step: set `draft: false`, push, and the provider's next
+poll sends the email. The site has no server and never sees an address, so
+unsubscribing is the provider's job too: every email it sends carries an
+unsubscribe link, and the form says so.
+
+The feed carries each piece in full. Its rendered body travels in
+`content:encoded`, MDX evaluated, with every root-relative link and image made
+absolute so nothing in the email points back at nowhere. What the email looks
+like is decided in the provider's template and design settings: Buttondown's
+template can send the whole piece through `item.content`, or only the title,
+summary, and link through `item.title`, `item.description`, and `item.url`,
+and its automation can hold each email as a draft for review before it goes
+out.
+
+Two variables switch it on:
+
+- `PUBLIC_SUBSCRIBE_ACTION` — the provider's form-post address; it must be
+  `https://` or the build fails. Buttondown, the recommended provider, uses
+  `https://buttondown.com/api/emails/embed-subscribe/<newsletter>`; its
+  RSS-to-email automation checks the feed every thirty minutes, and every email
+  it sends carries a one-click unsubscribe link and header.
+- `PUBLIC_SUBSCRIBE_EMAIL_FIELD` — the field name the provider reads the
+  address under; defaults to `email`. Kit expects `email_address`, Mailchimp
+  `EMAIL`.
+
+Without `PUBLIC_SUBSCRIBE_ACTION` the section shows a short panel pointing at
+the feed instead of a form. Point the provider's RSS-to-email feature at
+`<PUBLIC_SITE_URL><PUBLIC_BASE_PATH>/rss.xml`.
+
 ## Background video
 
 The landing page plays a video behind the content, fixed while you scroll and
@@ -97,7 +132,10 @@ Copy `.env.example` and fill it in. `PUBLIC_SITE_URL` sets the address used for
 canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL` overrides the
 contact address. The four `PUBLIC_GISCUS_*` values switch on comments and
 reactions; without them each piece shows a short panel explaining how to enable
-them. `PUBLIC_BASE_PATH` sets the subpath the site is served from.
+them. `PUBLIC_SUBSCRIBE_ACTION` (and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the
+provider reads a field other than `email`) switches on the email subscription
+form; without it the section points at the feed. `PUBLIC_BASE_PATH` sets the
+subpath the site is served from.
 
 ## GitHub Pages
 
@@ -112,7 +150,8 @@ Enable it once:
    enable Pages on its first run, so this is usually already done for you.
 2. Settings, Secrets and variables, Actions, Variables: add `PUBLIC_GISCUS_REPO`,
    `PUBLIC_GISCUS_REPO_ID`, `PUBLIC_GISCUS_CATEGORY`, `PUBLIC_GISCUS_CATEGORY_ID`,
-   and optionally `PUBLIC_CONTACT_EMAIL`. The build succeeds without them.
+   `PUBLIC_SUBSCRIBE_ACTION`, and optionally `PUBLIC_SUBSCRIBE_EMAIL_FIELD` and
+   `PUBLIC_CONTACT_EMAIL`. The build succeeds without them.
 3. Push to `main`.
 
 The workflow reads the address and base path from the Pages configuration, so
@@ -129,5 +168,5 @@ Railway uses the Node engine and package scripts in `package.json`. The
 production start command binds `0.0.0.0` and reads Railway's `PORT` variable. No
 `railway.json` is required.
 
-See `docs/md/DEVELOPMENT.md` for the source layout, validation commands, and
-Giscus setup.
+See `docs/md/DEVELOPMENT.md` for the source layout, validation commands,
+Giscus setup, and subscription setup.
