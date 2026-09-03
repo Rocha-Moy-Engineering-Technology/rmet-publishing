@@ -34,6 +34,7 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 - One collection holds every piece; there is no kind or category. The file name becomes the slug and the address is `/writings/<slug>`.
 - `abstract`, `doi`, and `pdfUrl` are optional per piece. A piece carrying them renders an abstract panel, a citation block, and a Portable Document Format (PDF) link; a piece without them renders plain.
 - `draft: true` excludes a piece from every listing, the feed, the sitemap, and the generated routes.
+- The deploy gate starts with `prettier --check .`, which covers content posts. Files `rmet_publishing.py` writes pass as written; a hand-written body must pass too, so run `npm run format` before pushing.
 - `PUBLIC_CONTENT_DIR` overrides the content directory at build time. The browser suites use it to build from `tests/fixtures/content` so no fixture is ever published.
 
 ## Presentation
@@ -54,6 +55,7 @@ The landing page, and only the landing page, carries a fixed video backdrop. `Ba
 - Sound ships off. The control in the corner unmutes, and it is revealed only once the video has started.
 - `prefers-reduced-motion` holds the muted backdrop on a single frame and stops the stills from cycling.
 - `PUBLIC_ASSETS_DIR` overrides the static asset directory at build time. The browser suites use it to build from `tests/fixtures/public`, so no suite ever loads the real media.
+- The fixture clip `tests/fixtures/public/video/background.webm` is thirty seconds of silent VP9 and Opus made with `ffmpeg` from its `color` and `anullsrc` sources. It must stay far longer than `BACKGROUND_HANDOVER_SECONDS`: `RMET-E2E-007` drives the loop point itself and asserts on the standby player before the clip's own handover, and it fails on a clip shorter than ten handover windows.
 - `RMET-E2E-007` covers a wide screen: two players, muted, not looping, fixed, playing, at the configured rate, with a sound control that unmutes. `RMET-E2E-008` covers a 390 by 844 screen: an active still, no `.webm` or `.mp4` request, an empty `currentSrc`, and a hidden sound control.
 
 ## Environment

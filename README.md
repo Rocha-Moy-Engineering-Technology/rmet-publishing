@@ -37,6 +37,10 @@ slug. `list` shows every piece, draft and published. Set `draft: false` (or
 pass `--publish` on create, or run `publish`) when the piece should appear on
 the next build.
 
+The deploy workflow runs `prettier --check` over the repository, content
+included. Files the script writes pass as written; run `npm run format` before
+pushing a piece whose body you wrote by hand.
+
 You can also add a Markdown or MDX file under
 `state/adapters/inbound/content/posts/` by hand. Front matter:
 

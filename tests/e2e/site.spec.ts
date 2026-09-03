@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-import { BACKGROUND_PLAYBACK_RATE } from '../../logic/media/background_video';
+import {
+  BACKGROUND_HANDOVER_SECONDS,
+  BACKGROUND_PLAYBACK_RATE,
+} from '../../logic/media/background_video';
 import {
   BASE_PATH_FIXTURE,
   FIXTURE_ASSETS_DIR,
@@ -194,6 +197,13 @@ test('RMET-E2E-007 plays the background video on a loop, silent until asked', as
             .evaluate((node: HTMLVideoElement) => node.currentTime > 0)
         )
         .toBe(true);
+
+      // the fixture must outlast this test by a wide margin: near its end
+      // the standby takes over on its own, and the assertions below assume
+      // the only handover is the one driven here
+      expect(
+        await video.first().evaluate((node: HTMLVideoElement) => node.duration)
+      ).toBeGreaterThan(BACKGROUND_HANDOVER_SECONDS * 10);
 
       expect(
         await video
