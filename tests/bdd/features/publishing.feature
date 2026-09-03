@@ -31,5 +31,7 @@ Feature: Reading and engaging with published writing
     When the reader opens the landing page
     Then the landing page offers an email subscription
     When the reader opens the first piece on the landing page
-    And the reader enters an email address and subscribes
+    And the reader opens the subscribe popup
+    Then the popup shows an email box
+    When the reader enters an email address and subscribes
     Then the subscription reaches the provider with that address

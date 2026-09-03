@@ -418,7 +418,12 @@ test('RMET-E2E-010 offers the feed in place of the form while no provider is con
     const section = page.locator('[data-testid="subscribe"]');
     await expect(section).toBeVisible();
     await expect(section.locator('form')).toHaveCount(0);
-    await expect(section.locator('a[href="/rss.xml"]')).toBeVisible();
+    await expect(section.locator('[data-testid="subscribe-open"]')).toHaveCount(
+      0
+    );
+    const feed = section.locator('[data-testid="feed-link"]');
+    await expect(feed).toBeVisible();
+    await expect(feed).toHaveAttribute('href', '/rss.xml');
     await captureRoute(page, 'rmet-e2e-010', '/subscribe-unconfigured');
   });
 });

@@ -288,6 +288,21 @@
     border-color: var(--ink);
   }
 
+  /* A small card in the top layer; the browser centres it and light-dismisses it. */
+  .popover {
+    inset: 0;
+    margin: auto;
+    width: min(24rem, calc(100vw - 2rem));
+    padding: 1.5rem;
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+  }
+
+  .popover::backdrop {
+    background: rgb(0 0 0 / 0.45);
+  }
+
   .prose {
     font-size: 1.0625rem;
     line-height: 1.75;

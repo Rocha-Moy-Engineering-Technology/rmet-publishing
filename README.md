@@ -65,13 +65,15 @@ one without them renders as a plain piece.
 
 ## Subscriptions
 
-The landing page and every piece end with a "New writing by email" form. It
-posts the reader's address straight to an RSS-to-email provider; the provider
+The landing page and every piece end with a "New writing by email" section:
+a Subscribe button that opens a small popup with one email box, beside an RSS
+feed button. The popup posts the reader's address straight to an RSS-to-email
+provider; the provider
 watches `/rss.xml` and emails every subscriber when a new piece appears there.
 Publishing is the only step: set `draft: false`, push, and the provider's next
 poll sends the email. The site has no server and never sees an address, so
 unsubscribing is the provider's job too: every email it sends carries an
-unsubscribe link, and the form says so.
+unsubscribe link, and the section says so.
 
 The feed carries each piece in full. Its rendered body travels in
 `content:encoded`, MDX evaluated, with every root-relative link and image made
@@ -93,8 +95,8 @@ Two variables switch it on:
   address under; defaults to `email`. Kit expects `email_address`, Mailchimp
   `EMAIL`.
 
-Without `PUBLIC_SUBSCRIBE_ACTION` the section shows a short panel pointing at
-the feed instead of a form. Point the provider's RSS-to-email feature at
+Without `PUBLIC_SUBSCRIBE_ACTION` the section shows one sentence and only the
+RSS feed button. Point the provider's RSS-to-email feature at
 `<PUBLIC_SITE_URL><PUBLIC_BASE_PATH>/rss.xml`.
 
 ## Background video

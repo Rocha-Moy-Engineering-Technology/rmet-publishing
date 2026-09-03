@@ -146,10 +146,24 @@ Then('the site records the chosen theme', async ({ page }) => {
 });
 
 Then('the landing page offers an email subscription', async ({ page }) => {
-  const form = page.locator('[data-testid="subscribe"] form');
-  await expect(form).toBeVisible();
+  const section = page.locator('[data-testid="subscribe"]');
+  await expect(section.locator('[data-testid="subscribe-open"]')).toBeVisible();
+  await expect(section.locator('[data-testid="feed-link"]')).toBeVisible();
+  const form = section.locator('form');
+  await expect(form).toBeHidden();
   await expect(form).toHaveAttribute('action', FIXTURE_SUBSCRIBE_ACTION);
   await captureRoute(page, 'rmet-bdd-006', '/subscribe');
+});
+
+When('the reader opens the subscribe popup', async ({ page }) => {
+  await page.locator('[data-testid="subscribe-open"]').click();
+});
+
+Then('the popup shows an email box', async ({ page }) => {
+  const popover = page.locator('[data-testid="subscribe-popover"]');
+  await expect(popover).toBeVisible();
+  await expect(popover.locator('input[type="email"]')).toBeFocused();
+  await captureRoute(page, 'rmet-bdd-006', '/subscribe-open');
 });
 
 When('the reader enters an email address and subscribes', async ({ page }) => {
@@ -162,7 +176,7 @@ When('the reader enters an email address and subscribes', async ({ page }) => {
       body: '<p>Subscribed</p>',
     });
   });
-  const form = page.locator('[data-testid="subscribe"] form');
+  const form = page.locator('[data-testid="subscribe-popover"] form');
   await form.locator('input[type="email"]').fill(READER_EMAIL);
   const popup = page.waitForEvent('popup');
   await form.locator('button[type="submit"]').click();
