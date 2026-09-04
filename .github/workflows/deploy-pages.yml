@@ -57,10 +57,6 @@ jobs:
           PUBLIC_SITE_URL: ${{ steps.pages.outputs.origin }}
           PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL }}
-          PUBLIC_GISCUS_REPO: ${{ vars.PUBLIC_GISCUS_REPO }}
-          PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
-          PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY }}
-          PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
           PUBLIC_SUBSCRIBE_ACTION: ${{ vars.PUBLIC_SUBSCRIBE_ACTION }}
           PUBLIC_SUBSCRIBE_EMAIL_FIELD: ${{ vars.PUBLIC_SUBSCRIBE_EMAIL_FIELD }}
         run: npm run build

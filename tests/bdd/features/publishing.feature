@@ -8,10 +8,9 @@ Feature: Reading and engaging with published writing
     Then the writings are listed with their publication dates
     And the newest piece is listed first
 
-  Scenario: RMET-BDD-002 a reader opens a piece and finds a place to comment and react
+  Scenario: RMET-BDD-002 a reader opens a piece from the landing page
     When the reader opens the first piece on the landing page
     Then the piece shows its title and body
-    And the piece offers a comment and reaction area
 
   Scenario: RMET-BDD-003 a reader reaches the resume and the profiles from the header
     When the reader opens the landing page

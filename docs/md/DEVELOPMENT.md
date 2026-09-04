@@ -20,7 +20,7 @@ npm run start
 
 ## Source layout
 
-- `logic/` holds pure functions only: post filtering and ordering, routing, tag counting, date formatting, reading time, citation formatting, Really Simple Syndication (RSS) and sitemap serialization, contact-address handling, Giscus settings resolution, and subscription settings resolution. Nothing here performs input or output.
+- `logic/` holds pure functions only: post filtering and ordering, routing, tag counting, date formatting, reading time, citation formatting, Really Simple Syndication (RSS) and sitemap serialization, contact-address handling, and subscription settings resolution. Nothing here performs input or output.
 - `types/` holds contracts, including the ports `types/ports/post_repository.ts` and `types/ports/environment_reader.ts`.
 - `state/adapters/outbound/` holds the production adapters: the content-collection repository and the environment reader.
 - `state/adapters/inbound/` is the Astro `srcDir`. It holds `content.config.ts`, the Markdown content, layouts, components, and pages.
@@ -65,16 +65,7 @@ Copy `.env.example` to `.env` and fill in the values.
 
 - `PUBLIC_SITE_URL` is the public address of the deployment. It sets `site` in `astro.config.mjs` and drives canonical links, the feed, and the sitemap. Without it the build falls back to the default in `logic/site/site_config.ts`.
 - `PUBLIC_CONTACT_EMAIL` overrides the contact address. The address is split into parts at build time and assembled by a small browser script, so it does not appear whole in the page source.
-- `PUBLIC_GISCUS_REPO`, `PUBLIC_GISCUS_REPO_ID`, `PUBLIC_GISCUS_CATEGORY`, and `PUBLIC_GISCUS_CATEGORY_ID` switch on comments and reactions. All four are required; if any is missing the comment section renders a panel explaining how to enable them.
 - `PUBLIC_SUBSCRIBE_ACTION` switches on the envelope icon and its subscribe popup. It must be an `https://` address; any other value fails the build with an error naming the variable, because a form that posts to a relative or plain-text address would ship silently broken. `PUBLIC_SUBSCRIBE_EMAIL_FIELD` names the field the provider reads the address under and defaults to `email`. Without the action only the RSS feed icon renders.
-
-## Comments and reactions
-
-1. Enable Discussions on the GitHub repository.
-2. Install the giscus GitHub App on that repository.
-3. Generate the four values at `https://giscus.app` and set them as `PUBLIC_GISCUS_*` variables in the deployment environment.
-
-Comment threads map to discussions by the piece address, for example `papers/paper-template`. The reaction bar on each discussion is the like mechanism. The theme toggle retunes the embedded thread through a `postMessage` call.
 
 ## Subscriptions
 
@@ -122,7 +113,7 @@ The repository ships no content, so the browser suites build their own. `withBui
 Repository configuration:
 
 - Settings, Pages, Source must be set to GitHub Actions.
-- Repository variables supply `PUBLIC_CONTACT_EMAIL`, the four `PUBLIC_GISCUS_*` values, and the two `PUBLIC_SUBSCRIBE_*` values. They are public values, so variables rather than secrets are correct. A build with none of them set still succeeds.
+- Repository variables supply `PUBLIC_CONTACT_EMAIL` and the two `PUBLIC_SUBSCRIBE_*` values. They are public values, so variables rather than secrets are correct. A build with none of them set still succeeds.
 - `state/adapters/inbound/public/` is the static asset directory; it holds `.nojekyll` and is the place for files referenced by `pdfUrl`.
 
 There is no lock file in the repository, so the workflow runs `npm install`. Committing `package-lock.json` would make the dependency set reproducible and let the workflow cache it.

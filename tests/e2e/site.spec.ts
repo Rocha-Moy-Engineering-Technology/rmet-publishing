@@ -40,7 +40,6 @@ test('RMET-E2E-001 navigates from the landing page into a piece', async ({
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('article h1')).toHaveText(title);
       await expect(page.locator('[data-testid="feed-link"]')).toHaveCount(2);
-      await expect(page.locator('[data-testid="comments"]')).toBeVisible();
       expect(page.url()).toContain('/writings/');
       await captureRoute(page, 'rmet-e2e-001', '/piece');
     }

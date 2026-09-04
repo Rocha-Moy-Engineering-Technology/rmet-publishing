@@ -86,10 +86,6 @@ When(
 Then('the piece shows its title and body', async ({ page }) => {
   await expect(page.locator('article h1')).toBeVisible();
   await expect(page.locator('[data-testid="post-body"]')).toBeVisible();
-});
-
-Then('the piece offers a comment and reaction area', async ({ page }) => {
-  await expect(page.locator('[data-testid="comments"]')).toBeVisible();
   await captureRoute(page, 'rmet-bdd-002', '/piece');
 });
 

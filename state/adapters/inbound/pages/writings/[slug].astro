@@ -2,14 +2,9 @@
 import { render } from 'astro:content';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Comments from '../../components/Comments.astro';
 import TagChips from '../../components/TagChips.astro';
 import { formatCitation } from '../../../../../logic/posts/citation';
-import {
-  WRITINGS_SEGMENT,
-  absoluteUrl,
-  postPath,
-} from '../../../../../logic/posts/post_routes';
+import { absoluteUrl, postPath } from '../../../../../logic/posts/post_routes';
 import { formatDate, toIsoDate } from '../../../../../logic/text/format_date';
 import { SITE } from '../../../../../logic/site/site_config';
 import {
@@ -112,7 +107,5 @@ const citation = formatCitation(post, {
         </section>
       )
     }
-
-    <Comments term={`${WRITINGS_SEGMENT}/${post.slug}`} />
   </article>
 </BaseLayout>

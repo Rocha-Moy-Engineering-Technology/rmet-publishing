@@ -21,26 +21,17 @@
 </button>
 
 <script>
-  import { giscusThemeMessage } from '../../../../logic/comments/giscus_settings';
-  import type { CommentsTheme } from '../../../../types/comments';
-
   (() => {
     const STORAGE_KEY = 'rmet-theme';
     const root = document.documentElement;
+    type Theme = 'light' | 'dark';
 
-    const apply = (theme: CommentsTheme): void => {
+    const apply = (theme: Theme): void => {
       root.classList.toggle('light', theme === 'light');
       root.dataset.theme = theme;
-      const frame = document.querySelector('iframe.giscus-frame');
-      if (frame instanceof HTMLIFrameElement && frame.contentWindow) {
-        frame.contentWindow.postMessage(
-          giscusThemeMessage(theme === 'light' ? 'light' : 'dark'),
-          'https://giscus.app'
-        );
-      }
     };
 
-    const store = (theme: CommentsTheme): void => {
+    const store = (theme: Theme): void => {
       try {
         localStorage.setItem(STORAGE_KEY, theme);
       } catch {
@@ -52,9 +43,7 @@
       '[data-testid="theme-toggle"]'
     )) {
       button.addEventListener('click', () => {
-        const next: CommentsTheme = root.classList.contains('light')
-          ? 'dark'
-          : 'light';
+        const next: Theme = root.classList.contains('light') ? 'dark' : 'light';
         apply(next);
         store(next);
       });

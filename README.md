@@ -1,8 +1,7 @@
 # rmet-publishing
 
-An Astro 7.2 static site for publishing writing, with reader comments and
-reactions through GitHub Discussions, and email notification of every new
-piece through a Really Simple Syndication (RSS) to email provider.
+An Astro 7.2 static site for publishing writing, with email notification of
+every new piece through a Really Simple Syndication (RSS) to email provider.
 
 ## Routes
 
@@ -132,9 +131,7 @@ npm run test:generated
 
 Copy `.env.example` and fill it in. `PUBLIC_SITE_URL` sets the address used for
 canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL` overrides the
-contact address. The four `PUBLIC_GISCUS_*` values switch on comments and
-reactions; without them each piece shows a short panel explaining how to enable
-them. `PUBLIC_SUBSCRIBE_ACTION` (and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the
+contact address. `PUBLIC_SUBSCRIBE_ACTION` (and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the
 provider reads a field other than `email`) switches on the envelope icon and
 its subscribe popup; without it only the feed icon shows. `PUBLIC_BASE_PATH` sets the
 subpath the site is served from.
@@ -150,8 +147,7 @@ Enable it once:
 
 1. Settings, Pages, Source: GitHub Actions. The workflow also asks GitHub to
    enable Pages on its first run, so this is usually already done for you.
-2. Settings, Secrets and variables, Actions, Variables: add `PUBLIC_GISCUS_REPO`,
-   `PUBLIC_GISCUS_REPO_ID`, `PUBLIC_GISCUS_CATEGORY`, `PUBLIC_GISCUS_CATEGORY_ID`,
+2. Settings, Secrets and variables, Actions, Variables: add
    `PUBLIC_SUBSCRIBE_ACTION`, and optionally `PUBLIC_SUBSCRIBE_EMAIL_FIELD` and
    `PUBLIC_CONTACT_EMAIL`. The build succeeds without them.
 3. Push to `main`.
@@ -170,5 +166,5 @@ Railway uses the Node engine and package scripts in `package.json`. The
 production start command binds `0.0.0.0` and reads Railway's `PORT` variable. No
 `railway.json` is required.
 
-See `docs/md/DEVELOPMENT.md` for the source layout, validation commands,
-Giscus setup, and subscription setup.
+See `docs/md/DEVELOPMENT.md` for the source layout, validation commands, and
+subscription setup.
