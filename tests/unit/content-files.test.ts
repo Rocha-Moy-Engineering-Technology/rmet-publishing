@@ -15,6 +15,7 @@ describe('content file extensions', () => {
     expect(CONTENT_GLOB).toEqual([
       '**/*.{md,mdx}',
       '!**/*.{transcribed,compose}.*.{md,mdx}',
+      '!**/*.{migrated,before-restore}.*.{md,mdx}',
     ]);
   });
 

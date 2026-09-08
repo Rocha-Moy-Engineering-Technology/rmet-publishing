@@ -4,6 +4,7 @@ const extensions = `{${CONTENT_EXTENSIONS.join(',')}}`;
 export const CONTENT_GLOB = [
   `**/*.${extensions}`,
   `!**/*.{transcribed,compose}.*.${extensions}`,
+  `!**/*.{migrated,before-restore}.*.${extensions}`,
 ];
 
 export function stripContentExtension(filename: string): string {

@@ -11,6 +11,9 @@ test('RMET-VERSIONS-001 loader excludes editorial siblings before parsing', asyn
     await mkdir(join(base, 'nested'));
     for (const filename of [
       'original.md',
+      'orphan.migrated.bad.md',
+      'original.compose.20260908_143205.migrated.20260908_160000.md',
+      'nested/other.transcribed.20260908_143205.before-restore.20260908_160000.mdx',
       'nested/other.mdx',
       'original.compose.20260908_143205.md',
       'nested/other.transcribed.20260908_143205.mdx',
