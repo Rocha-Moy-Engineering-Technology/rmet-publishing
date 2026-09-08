@@ -452,3 +452,32 @@ test('RMET-E2E-011 carries the rendered body of every piece in the feed', async 
     }
   );
 });
+
+test('RMET-VERSIONS-E2E-001 keeps review copies out of pages, feed, and sitemap', async ({
+  page,
+}) => {
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR },
+    async ({ baseURL }) => {
+      await page.goto(`${baseURL}/`);
+      await expect(page.locator('[data-testid="post-card"]')).toHaveCount(3);
+      await expect(page.locator('main')).not.toContainText(
+        'Editorial review only'
+      );
+      await page.locator('[data-testid="post-card"] a').first().click();
+      await expect(page.locator('article h1')).toBeVisible();
+      await expect(page.locator('article')).not.toContainText(
+        'EDITORIAL_REVIEW_ONLY'
+      );
+      for (const route of ['/rss.xml', '/sitemap.xml']) {
+        const response = await page.request.get(`${baseURL}${route}`);
+        expect(response.status()).toBe(200);
+        const content = await response.text();
+        expect(content).not.toContain('EDITORIAL_REVIEW_ONLY');
+        expect(content).not.toContain('compose20260908');
+        expect(content).not.toContain('transcribed20260908');
+      }
+      await captureRoute(page, 'rmet-versions-e2e-001', '/original');
+    }
+  );
+});

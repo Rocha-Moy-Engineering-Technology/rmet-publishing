@@ -12,7 +12,10 @@ describe('content file extensions', () => {
   });
 
   test('RMET-UNIT-081 builds the collection glob from those extensions', () => {
-    expect(CONTENT_GLOB).toBe('**/*.{md,mdx}');
+    expect(CONTENT_GLOB).toEqual([
+      '**/*.{md,mdx}',
+      '!**/*.{transcribed,compose}.*.{md,mdx}',
+    ]);
   });
 
   test('RMET-UNIT-082 leaves an identifier without an extension unchanged', () => {

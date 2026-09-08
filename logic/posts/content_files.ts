@@ -1,6 +1,10 @@
 export const CONTENT_EXTENSIONS = ['md', 'mdx'] as const;
 
-export const CONTENT_GLOB = `**/*.{${CONTENT_EXTENSIONS.join(',')}}`;
+const extensions = `{${CONTENT_EXTENSIONS.join(',')}}`;
+export const CONTENT_GLOB = [
+  `**/*.${extensions}`,
+  `!**/*.{transcribed,compose}.*.${extensions}`,
+];
 
 export function stripContentExtension(filename: string): string {
   const lower = filename.toLowerCase();
