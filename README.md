@@ -5,20 +5,21 @@ every new piece through a Really Simple Syndication (RSS) to email provider.
 
 ## Routes
 
-- `/` the landing page: identity, the resume link, and every published piece newest first
+- `/` the landing page: identity and every published piece newest first
 - `/writings/<slug>` a single piece (`/writings` redirects to `/`)
 - `/tags`, `/tags/<tag>` subject indexes
 - `/contact` email and profile links
 - `/rss.xml`, `/sitemap.xml` syndication
 - `/health` returns HTTP 200, `application/json`, and exactly `{"status":"ok"}`
 
-The resume sits in two places: a `RESUME` entry in the header, beside the GitHub
-and LinkedIn icons, and a call to action under the name on the landing page.
+The resume is a `RESUME` entry in the header, beside the GitHub and LinkedIn
+icons, and a link on the contact page.
 
 ## Publishing a piece
 
 From the agent root, `rmet_publishing.py` creates, lists, publishes,
-unpublishes, opens, and deletes pieces:
+unpublishes, opens, renames, and deletes pieces, and manages their editorial
+history:
 
 ```sh
 rmet_publishing.py create --title "Latency notes"
@@ -26,16 +27,31 @@ rmet_publishing.py list
 rmet_publishing.py publish latency-notes
 rmet_publishing.py unpublish "Latency notes"
 rmet_publishing.py open latency-notes
+rmet_publishing.py rename latency-notes better-notes
 rmet_publishing.py delete latency-notes
+rmet_publishing.py versions latency-notes
+rmet_publishing.py diff latency-notes.compose.20260901_120000.md
+rmet_publishing.py migrate latency-notes.compose.20260901_120000.md
+rmet_publishing.py archive latency-notes
+rmet_publishing.py restore latency-notes.compose.20260901_120000.migrated.20260902_090000.md
 ```
 
 `create` writes `state/adapters/inbound/content/posts/<slug>.md` with
 `draft: true`. Pass `--format mdx` for an MDX file. The file name is the
 `/writings/<slug>` address. The script prints the full path and opens the file
 with `code`. `publish` / `unpublish` / `open` / `delete` take a title or a
-slug. `list` shows every piece, draft and published. Set `draft: false` (or
-pass `--publish` on create, or run `publish`) when the piece should appear on
-the next build.
+slug; `rename` takes the current one and the new one. `list` shows every
+piece, draft and published. Set `draft: false` (or pass `--publish` on create,
+or run `publish`) when the piece should appear on the next build.
+
+`versions` lists the timestamped `.transcribed.<timestamp>` and
+`.compose.<timestamp>` siblings Transcribe and Compose leave beside a piece;
+`diff` opens one against its original in VS Code; `migrate` archives the
+original as `.migrated.<timestamp>` and adopts the version as the new draft;
+`archive` lists the archived originals; `restore` copies one back as a draft,
+keeping the current original as `.before-restore.<timestamp>`. The content
+collection ingests only originals: review siblings and archives are excluded
+from routes, listings, the feed, and the sitemap whatever their front matter.
 
 The deploy workflow runs `prettier --check` over the repository, content
 included. Files the script writes pass as written; run `npm run format` before

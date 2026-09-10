@@ -29,8 +29,8 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 
 ## Content
 
-- From the agent root, `rmet_publishing.py` creates, lists, publishes, unpublishes, opens, renames, and deletes those files (`create --title "…"`, `list`, `publish` / `unpublish` / `open` / `delete` with a title or slug, `rename` with the current title or slug and the new title or slug).
-- Pieces live in `state/adapters/inbound/content/posts/` as Markdown or MDX with front matter. The collection glob is `**/*.{md,mdx}`.
+- From the agent root, `rmet_publishing.py` creates, lists, publishes, unpublishes, opens, renames, and deletes those files (`create --title "…"`, `list`, `publish` / `unpublish` / `open` / `delete` with a title or slug, `rename` with the current title or slug and the new title or slug), and manages editorial history: `versions [piece]` lists timestamped Transcribe and Compose siblings, `diff <version>` compares one with its original in VS Code, `migrate <version>` archives the original and adopts the version as a draft, `archive [piece]` lists the originals replaced by migration or restore, and `restore <archive>` brings one back as a draft while preserving the current original.
+- Pieces live in `state/adapters/inbound/content/posts/` as Markdown or MDX with front matter. The collection glob (`CONTENT_GLOB` in `logic/posts/content_files.ts`) matches `.md` and `.mdx` files but excludes `.transcribed.<timestamp>` and `.compose.<timestamp>` review siblings and `.migrated.<timestamp>` and `.before-restore.<timestamp>` archives, so those never reach routes, listings, the feed, or the sitemap.
 - One collection holds every piece; there is no kind or category. The file name becomes the slug and the address is `/writings/<slug>`.
 - `abstract`, `doi`, and `pdfUrl` are optional per piece. A piece carrying them renders an abstract panel, a citation block, and a Portable Document Format (PDF) link; a piece without them renders plain.
 - `draft: true` excludes a piece from every listing, the feed, the sitemap, and the generated routes.
@@ -41,7 +41,7 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 
 - Dark is the default theme; the toggle switches to light and stores the choice under `rmet-theme`. The root element carries `data-theme` and, in light mode, the `light` class.
 - Type is Barlow Condensed for display, navigation and labels, Barlow for body copy, both loaded from Google Fonts with a system fallback stack.
-- Design tokens and the component classes (`display`, `label`, `nav-link`, `entry`, `chip`, `prose`) live in `state/adapters/inbound/styles/global.css`.
+- Design tokens and the component classes (`display`, `label`, `nav-link`, `icon-link`, `entry`, `chip`, `text-link`, `prose`) live in `state/adapters/inbound/styles/global.css`.
 
 ## Background media
 
@@ -69,7 +69,7 @@ Copy `.env.example` to `.env` and fill in the values.
 
 ## Subscriptions
 
-The site has no server, so notification rides on the feed: an RSS-to-email provider polls `/rss.xml` and emails every subscriber when a new item appears. The site only collects the address, and it never stores one, so unsubscribing is the provider's job: every email it sends carries an unsubscribe link, and the section promises exactly that.
+The site has no server, so notification rides on the feed: an RSS-to-email provider polls `/rss.xml` and emails every subscriber when a new item appears. The site only collects the address, and it never stores one, so unsubscribing is the provider's job: every email it sends carries an unsubscribe link, and the popover card promises exactly that ("One email for each new piece as it is published, and nothing else. Unsubscribe with the link in any of them.").
 
 1. Create a newsletter at a provider with an RSS-to-email feature and point that feature at `<PUBLIC_SITE_URL><PUBLIC_BASE_PATH>/rss.xml`. Buttondown is the recommended one: its automation checks the feed every thirty minutes, and every email carries a one-click unsubscribe link plus the `List-Unsubscribe` header mail clients surface as an Unsubscribe button.
 2. Set `PUBLIC_SUBSCRIBE_ACTION` to the provider's form-post address (Buttondown: `https://buttondown.com/api/emails/embed-subscribe/<newsletter>`), and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the provider reads a field other than `email` (Kit `email_address`, Mailchimp `EMAIL`).
@@ -116,7 +116,7 @@ Repository configuration:
 - Repository variables supply `PUBLIC_CONTACT_EMAIL` and the two `PUBLIC_SUBSCRIBE_*` values. They are public values, so variables rather than secrets are correct. A build with none of them set still succeeds.
 - `state/adapters/inbound/public/` is the static asset directory; it holds `.nojekyll` and is the place for files referenced by `pdfUrl`.
 
-There is no lock file in the repository, so the workflow runs `npm install`. Committing `package-lock.json` would make the dependency set reproducible and let the workflow cache it.
+`package-lock.json` is committed, so the dependency set is reproducible; the workflow still runs `npm install --no-audit --no-fund` against it.
 
 ## Health
 

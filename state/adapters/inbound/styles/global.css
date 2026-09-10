@@ -332,11 +332,13 @@
     font-size: 1.25rem;
   }
 
+  .text-link,
   .prose a {
     border-bottom: 1px solid var(--line-strong);
     transition: border-color 0.15s ease;
   }
 
+  .text-link:hover,
   .prose a:hover {
     border-color: var(--ink);
   }
