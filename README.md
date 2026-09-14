@@ -30,10 +30,10 @@ rmet_publishing.py open latency-notes
 rmet_publishing.py rename latency-notes better-notes
 rmet_publishing.py delete latency-notes
 rmet_publishing.py versions latency-notes
-rmet_publishing.py diff latency-notes.compose.20260901_120000.md
-rmet_publishing.py migrate latency-notes.compose.20260901_120000.md
+rmet_publishing.py diff latency-notes.single-compose.20260901_120000.md
+rmet_publishing.py migrate latency-notes.single-compose.20260901_120000.md
 rmet_publishing.py archive latency-notes
-rmet_publishing.py restore latency-notes.compose.20260901_120000.migrated.20260902_090000.md
+rmet_publishing.py restore latency-notes.single-compose.20260901_120000.migrated.20260902_090000.md
 ```
 
 `create` writes `state/adapters/inbound/content/posts/<slug>.md` with
@@ -44,8 +44,10 @@ slug; `rename` takes the current one and the new one. `list` shows every
 piece, draft and published. Set `draft: false` (or pass `--publish` on create,
 or run `publish`) when the piece should appear on the next build.
 
-`versions` lists the timestamped `.transcribed.<timestamp>` and
-`.compose.<timestamp>` siblings Transcribe and Compose leave beside a piece;
+`versions` lists the timestamped `.transcribed.<timestamp>`,
+`.single-compose.<timestamp>`, `.single-compose-<harness>.<timestamp>`, and
+`.multi-compose.<timestamp>` siblings (plus legacy `.compose.<timestamp>`) that
+Transcribe, Single Compose, and Multi Compose leave beside a piece;
 `diff` opens one against its original in VS Code; `migrate` archives the
 original as `.migrated.<timestamp>` and adopts the version as the new draft;
 `archive` lists the archived originals; `restore` copies one back as a draft,
