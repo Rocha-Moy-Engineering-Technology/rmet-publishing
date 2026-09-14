@@ -1,6 +1,6 @@
 ---
-title: 'Starifold: agentic development with multiple harnesses and models. A hedge against the AI chaos. Part-I'
-description: 'A conceptual framework for working with multiple harnesses and models'
+title: 'Agentic development with multiple harnesses and models: A hedge against the AI chaos. Part-I'
+description: 'A conceptual framework for managing multiple harnesses and models'
 publishedAt: 2026-09-04
 draft: true
 ---
