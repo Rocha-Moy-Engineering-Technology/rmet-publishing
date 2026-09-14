@@ -3,7 +3,8 @@ export const CONTENT_EXTENSIONS = ['md', 'mdx'] as const;
 const extensions = `{${CONTENT_EXTENSIONS.join(',')}}`;
 export const CONTENT_GLOB = [
   `**/*.${extensions}`,
-  `!**/*.{transcribed,compose}.*.${extensions}`,
+  `!**/*.{transcribed,compose,single-compose,multi-compose}.*.${extensions}`,
+  `!**/*.single-compose-*.*.${extensions}`,
   `!**/*.{migrated,before-restore}.*.${extensions}`,
 ];
 

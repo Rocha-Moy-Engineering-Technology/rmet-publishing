@@ -16,6 +16,9 @@ test('RMET-VERSIONS-001 loader excludes editorial siblings before parsing', asyn
       'nested/other.transcribed.20260908_143205.before-restore.20260908_160000.mdx',
       'nested/other.mdx',
       'original.compose.20260908_143205.md',
+      'original.single-compose.20260908_143205.md',
+      'original.single-compose-claude.20260908_143206.md',
+      'original.multi-compose.20260908_143207.md',
       'nested/other.transcribed.20260908_143205.mdx',
     ]) {
       await writeFile(join(base, filename), 'fixture');

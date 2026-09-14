@@ -14,7 +14,8 @@ describe('content file extensions', () => {
   test('RMET-UNIT-081 builds the collection glob from those extensions', () => {
     expect(CONTENT_GLOB).toEqual([
       '**/*.{md,mdx}',
-      '!**/*.{transcribed,compose}.*.{md,mdx}',
+      '!**/*.{transcribed,compose,single-compose,multi-compose}.*.{md,mdx}',
+      '!**/*.single-compose-*.*.{md,mdx}',
       '!**/*.{migrated,before-restore}.*.{md,mdx}',
     ]);
   });
