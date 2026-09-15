@@ -7,11 +7,11 @@ draft: true
 
 ## This Is Not Another UI
 
-Let's get something out of the way before we start. This is not about creating another UI to interface with different models or different harnesses. Yet another UI. This is about leveraging — about harnessing — what already exists.
+Let's get something out of the way before we start. This is not about creating another UI to interface with different models or different harnesses. Yet another UI. This is about leveraging, about harnessing, what already exists.
 
 It's about harnessing what companies are already pouring tons of money into. A lot of person hours are being poured into these different harnesses and different models.
 
-This is not about creating something new entirely. This is a conceptual framework that defines a structure, and the way that structure interacts, in order to leverage and optimize the use of these different harnesses — efficiently and effectively, without waste.
+This is not about creating something new entirely. This is a conceptual framework that defines a structure, and the way that structure interacts, in order to leverage and optimize the use of these different harnesses in an effective way — efficiently and effectively, without waste.
 
 ## Why Think About It This Way
 
@@ -35,7 +35,7 @@ But ever since that day, I understood that I couldn't just rely on one company, 
 
 So then right off the bat, the engineer in me understood that we needed a way to ensure that the commands, which were still a thing when this… These are going away now for some of the harnesses; some of the popular harnesses have done away with commands, even though Claude Code still retains them to the date of this writing. But it turns out that there are some primitives that are shared amongst the different harnesses. Skills, and at the time commands. Skills, sub-agents. And sub-agents, they're still coming along. They weren't well supported yet when I started this work, but I knew that sub-agents were going to be a thing. So from that point I started working with the primitives that were shared and well understood and implemented amongst the different harnesses.
 
-And then I've been progressively implementing these primitives within this conceptual framework, which allows me to create this primitive once and have it deployed to the different harnesses. So you can think of it as keeping things dry. Keeping my markdown dry. I write this command once, and the command is supposed to get deployed to the different harnesses, taking into account, at the time, the differences and solitudes between the different harnesses.
+And then I've been progressively implementing these primitives within this conceptual framework, which allows me to basically create this primitive once and have it deployed to the different harnesses. So you can think of it as keeping things dry, basically. Keeping my markdown dry. I write this command once, and the command is supposed to get deployed to the different harnesses, taking into account, at the time, the differences and solitudes between the different harnesses.
 
 And so that gave a start to what I call today Asterifold. Asterifold comes from A star, the concept of A star, which is a classical way of doing search in AI — a classical AI method for doing search using heuristics to improve conversions — and fold, from many fold, in this case from having many different harnesses and agents.
 
@@ -103,12 +103,7 @@ If you walk through the progression here, we started with wanting to be able to 
 
 ## The Four Pieces
 
-And out of that, we have a structured way of doing that. We have a structure where we have a place that's common to all agents. We have the different agents. And then finally, we have a context structure that is specific to the projects that you're working on. So you have these four pieces:
-
-- **Commons:** a location for what is shared across agents.
-- **Context:** a location for the context specific to the projects we're working on.
-- **Agents:** a location for the agents themselves.
-- **Supervised projects:** the projects those agents supervise.
+And out of that, we have a structured way of doing that. We have a structure where we have a place that's common to all agents. We have the different agents. And then finally, we have a context structure that is specific to the projects that you're working on. So you have these four pieces: a commons location, a context location, an agents location, which is where the agents live, and then the supervised projects, which are the projects that are supervised by these different agents.
 
 And this is the essence of Asterifold. I'm able to keep a growing infrastructure that's shared amongst all the different harnesses. And I'm able to quickly spin up different projects and attach different agents to them, and I'm able to manipulate these agents.
 
@@ -120,7 +115,7 @@ Another benefit that we have is that we are building a system that is disjoint a
 
 And we're able to create these adapters. We are currently relying on Git for work trees. This framework does that, but it does not need to use GitHub. So much so that right now, if GitHub goes down again, like it has recently, we can, as of the date of this writing, just continue working locally and have work trees be created and so forth.
 
-And I can work without Wi-Fi. I can work using local models. I can work without GitHub by using local Git and a local Git repo. And so that gives us the ultimate flexibility to not be over-reliant on these services that keep our projects running today.
+And I can work without Wi-Fi. And I can work by using local models, and I can work without GitHub by using local Git and a local Git repo. And so that gives us the ultimate flexibility to not be over-reliant on these services that keep our projects running today.
 
 ## Before We Finish Part One
 
@@ -140,7 +135,7 @@ And that's going to be our definition, and that gives us, naturally, our definit
 
 And since we have these different agents built to be used with different sets of projects that share common context, it turns out that we have common context and we have specialized context. So if you look at our context, that's how it's sort of broken down. And we also may have some inner context from the agent itself.
 
-So this comes from that, for the tree, the trident of the ternary structure, where we have agent commons, we have agent context, and we have agent instance. So all these three bits, they may inject different context. And we may swap an agent for another, and then the only context that changes is the context that comes from the instance. Or we may take the same agent and apply it to a different project. So then we still have the common context and the agent context, but now we have a new specialized context in the project.
+So this comes from the ternary structure, where we have agent commons, we have agent context, and we have agent instance. So all these three bits, they may inject different context. And we may swap an agent for another, and then the only context that changes is the context that comes from the instance. Or we may take the same agent and apply it to a different project. So then we still have the common context and the agent context, but now we have a new specialized context in the project.
 
 And what this gives us is a way to compose instructions and documentation. Much like how we keep code dry, we can also keep markdown dry. And that is a necessity that comes from having such a framework. Again, nothing novel, but a necessity for accomplishing what this conceptual framework aims to accomplish.
 
@@ -172,6 +167,6 @@ And this is only possible when we explore these different harnesses and leverage
 
 ## Native Modes and Early Adoption
 
-So in some of these harnesses, we have these special modes, like the debug mode that is native within — it's got native ramifications within the harness — for both Kilo Code and Cursor. And these are things we can look into: replicating some of this behavior into other harnesses — but that we may not be able to do completely, because what these harnesses have now is native support for these modes.
+So in some of these harnesses, we have these special modes, like the debug mode that is native within the harness for both Kilo Code and Cursor. And these are things we can look into: replicating some of this behavior into other harnesses — but that we may not be able to do completely, because what these harnesses have now is native support for these modes.
 
 And so going through all these harnesses is a great way to understand some of the things that we should be looking forward to: features that are not yet quite established across the other harnesses, but things that we may start to take advantage of early. So both things. We're able to know what features are really solidified and stable. And we can also be early adopters and take advantage of them in a way that does not compromise our workflows if support for any of these gets dropped. We can still take advantage of early features in a responsible way.
