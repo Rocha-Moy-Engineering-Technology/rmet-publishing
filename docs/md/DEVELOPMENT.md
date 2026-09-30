@@ -23,7 +23,7 @@ npm run start
 - `logic/` holds pure functions only: post filtering and ordering, routing, tag counting, date formatting, reading time, citation formatting, Really Simple Syndication (RSS) and sitemap serialization, contact-address handling, and subscription settings resolution. Nothing here performs input or output.
 - `types/` holds contracts, including the ports `types/ports/post_repository.ts` and `types/ports/environment_reader.ts`.
 - `state/adapters/outbound/` holds the production adapters: the content-collection repository and the environment reader.
-- `state/adapters/inbound/` is the Astro `srcDir`. It holds `content.config.ts`, the Markdown content, layouts, components, and pages.
+- `state/adapters/inbound/` is the Astro `srcDir`. It holds `content.config.ts`, the collection's loader and schema in `posts_collection.ts` (apart from `content.config.ts`, which needs the `astro:content` virtual module, so the integration suite can run them), the Markdown content, layouts, components, and pages.
 
 Unit tests cover `logic/` at 100 percent branch, function, line, and statement coverage. Adapters are covered by the integration, BDD, end-to-end, and smoke suites.
 
@@ -31,7 +31,8 @@ Unit tests cover `logic/` at 100 percent branch, function, line, and statement c
 
 - From the agent root, `rmet_publishing.py` creates, lists, publishes, unpublishes, opens, renames, and deletes those files (`create --title "…"`, `list`, `publish` / `unpublish` / `open` / `delete` with a title or slug, `rename` with the current title or slug and the new title or slug), and manages editorial history: `versions [piece]` lists timestamped Transcribe, Single Compose, Multi Compose, and legacy Compose siblings, `diff <version>` compares one with its original in VS Code, `migrate <version>` archives the original and adopts the version as a draft, `archive [piece]` lists the originals replaced by migration or restore, and `restore <archive>` brings one back as a draft while preserving the current original.
 - Pieces live in `state/adapters/inbound/content/posts/` as Markdown or MDX with front matter. The collection glob (`CONTENT_GLOB` in `logic/posts/content_files.ts`) matches `.md` and `.mdx` files but excludes `.transcribed.<timestamp>`, `.single-compose.<timestamp>`, `.single-compose-<harness>.<timestamp>`, `.multi-compose.<timestamp>`, and legacy `.compose.<timestamp>` review siblings and `.migrated.<timestamp>` and `.before-restore.<timestamp>` archives, so those never reach routes, listings, the feed, or the sitemap.
-- One collection holds every piece; there is no kind or category. The file name becomes the slug and the address is `/writings/<slug>`.
+- One collection holds every piece; there is no kind or category. The file name is the address `/writings/<slug>`: the glob loader keys each entry by its path under the content directory, extension included (`generateId` in `state/adapters/inbound/posts_collection.ts`), and `logic/posts/post_mapper.ts` applies `logic/text/slugify.ts` to the file name without its extension. So `don't-panic.md` is `/writings/don-t-panic`, `v1.2.md` is `/writings/v1-2`, and `guides/index.md` is `/writings/index`, the slugs `rmet_publishing.py` prints and lists. Astro's default id would have github-slugged the path instead (`dont-panic`, `v12`, `guides`) and given way to a front-matter `slug`.
+- A front-matter `slug` fails the build: the schema refuses the key, so a page can never be served at an address the file name does not give. Two content files that slugify alike, drafts included (`notes.md` and `notes.mdx`, or the same name in two folders), also fail the build, naming both files (`assertUniqueSlugs` in `logic/posts/unique_slugs.ts`, called by `listPostDocuments`). `RMET-INTEGRATION-006` to `RMET-INTEGRATION-008` run the production loader and schema; `RMET-E2E-012` builds `tests/fixtures/content/don't-panic-v1.2.md` and finds it at `/writings/don-t-panic-v1-2`; `RMET-E2E-013` and `RMET-E2E-014` build throwaway content under `test-results/content-cases/` and expect the two refusals.
 - `abstract`, `doi`, and `pdfUrl` are optional per piece. A piece carrying them renders an abstract panel, a citation block, and a Portable Document Format (PDF) link; a piece without them renders plain.
 - `draft: true` excludes a piece from every listing, the feed, the sitemap, and the generated routes.
 - The deploy gate starts with `prettier --check .`, which covers content posts. Files `rmet_publishing.py` writes pass as written; a hand-written body must pass too, so run `npm run format` before pushing.
@@ -105,7 +106,7 @@ The repository ships no content, so the browser suites build their own. `withBui
 
 `.github/workflows/deploy-pages.yml` runs on every push to `main` and on manual dispatch.
 
-1. It installs dependencies and the browser the suites need.
+1. It sets up Node from `engines.node` in `package.json` (`node-version-file`), installs dependencies, and installs the browser the suites need.
 2. It runs `npm run test:generated`, uploading the captured screenshots as a workflow artifact.
 3. It reads the Pages origin and base path from `actions/configure-pages` and builds with them.
 4. It uploads `dist/` and deploys.
@@ -118,6 +119,8 @@ Repository configuration:
 
 `package-lock.json` is committed, so the dependency set is reproducible; the workflow still runs `npm install --no-audit --no-fund` against it.
 
+`engines.node` (`^26.3.0`) is the one Node pin: the workflow, Railway, and `npm install`'s engine check all read it. 26.3 is the floor `eslint-plugin-astro` sets on the 26 line. `slugify.ts` strips `\p{Diacritic}` characters, a set that comes from the Unicode data of the Node runtime; Node 26 ships ICU 78.3 with Unicode 17.0 (`process.versions.unicode`; checked on 26.0.0 and 26.10.0, the first and latest releases), and the publishing CLI's mirror of `slugify.ts` (`agent_context/agent_tools/code/python/context_modules/rmet_publishing/logic/diacritics.py`) lists the Unicode 17.0 Diacritic set. Node 22.12.0 to 22.22.0 carry Unicode 16.0, whose set differs by 69 code points, so a build there could serve a rare accented title at a different address than the CLI prints. Move the Node line, the CLI's list, and `SLUG_UNICODE_VERSION` in `logic/text/slugify.ts` together; since even a minor release can bring newer Unicode data (22.22.0 carries 16.0 and 22.23.3 carries 17.0), unit test RMET-UNIT-035 fails whenever `process.versions.unicode` differs from that constant.
+
 ## Health
 
 - `/health` is the only health endpoint.
@@ -125,6 +128,6 @@ Repository configuration:
 
 ## Railway
 
-- Railway reads the Node engine and package scripts from `package.json`.
+- Railway reads the Node engine (`^26.3.0`) and package scripts from `package.json`.
 - Production binds `0.0.0.0` and consumes Railway's `PORT` environment variable.
 - No `railway.json` is needed.

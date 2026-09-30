@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { slugify } from '../../logic/text/slugify';
+import { SLUG_UNICODE_VERSION, slugify } from '../../logic/text/slugify';
 
 describe('slugify', () => {
   test('RMET-UNIT-030 lowercases and joins words with hyphens', () => {
@@ -23,5 +23,9 @@ describe('slugify', () => {
 
   test('RMET-UNIT-034 returns an empty slug for input without words', () => {
     expect(slugify('***')).toBe('');
+  });
+
+  test('RMET-UNIT-035 runs on the Unicode version the slug rule is pinned to', () => {
+    expect(process.versions.unicode).toBe(SLUG_UNICODE_VERSION);
   });
 });

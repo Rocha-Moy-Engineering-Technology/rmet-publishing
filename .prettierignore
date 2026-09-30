@@ -6,3 +6,20 @@ package-lock.json
 playwright-report
 test-results
 tests/.features-gen
+
+# Editorial versions and archives: the marker filenames logic/posts/content_files.ts
+# excludes from the collection. They are history records, kept as written.
+*.transcribed.*.md
+*.transcribed.*.mdx
+*.compose.*.md
+*.compose.*.mdx
+*.single-compose.*.md
+*.single-compose.*.mdx
+*.single-compose-*.*.md
+*.single-compose-*.*.mdx
+*.multi-compose.*.md
+*.multi-compose.*.mdx
+*.migrated.*.md
+*.migrated.*.mdx
+*.before-restore.*.md
+*.before-restore.*.mdx

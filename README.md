@@ -80,6 +80,13 @@ Every piece uses the same shape. A piece carrying an abstract, a Digital Object
 Identifier (DOI), or a Portable Document Format (PDF) link renders those extras;
 one without them renders as a plain piece.
 
+The file name is the address, for hand-written files too: the slug is
+`logic/text/slugify.ts` applied to the file name without its extension, so
+`don't-panic.md` is served at `/writings/don-t-panic` and `v1.2.md` at
+`/writings/v1-2`, the slug `rmet_publishing.py list` shows. There is no `slug`
+key: one in the front matter fails the build, and so do two files that give the
+same slug, such as `notes.md` and `notes.mdx`.
+
 ## Subscriptions
 
 Every page carries an envelope icon and an RSS feed icon in the header and
@@ -144,6 +151,13 @@ npm install
 npm run dev
 npm run test:generated
 ```
+
+Node 26 is required (`engines` in `package.json`, `^26.3.0`), and the deploy
+workflow installs the version that field names. The Node runtime's Unicode data
+decides which accents `slugify.ts` strips, and `rmet_publishing.py` mirrors
+that rule for Unicode 17.0, so change the Node line only together with the
+CLI's list and `SLUG_UNICODE_VERSION` in `logic/text/slugify.ts`. Unit test
+RMET-UNIT-035 fails when the running Node's Unicode version drifts from it.
 
 ## Configuration
 

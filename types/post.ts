@@ -18,6 +18,12 @@ export interface PostSource {
   readonly data: PostFrontmatter;
 }
 
+/** A content file (its collection entry id) and the slug it is served at. */
+export interface SlugClaim {
+  readonly id: string;
+  readonly slug: string;
+}
+
 export interface Post {
   readonly slug: string;
   readonly title: string;

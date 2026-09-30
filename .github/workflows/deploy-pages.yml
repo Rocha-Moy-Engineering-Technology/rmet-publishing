@@ -25,7 +25,9 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          # engines.node is the one Node pin. Its Unicode data drives slugify.ts
+          # and must match the publishing CLI's slug mirror; move them together.
+          node-version-file: package.json
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund

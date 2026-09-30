@@ -7,6 +7,7 @@ import {
   comparePostsByRecency,
   isPublished,
 } from '../../../../logic/posts/post_queries';
+import { assertUniqueSlugs } from '../../../../logic/posts/unique_slugs';
 import type { Post, RenderedPost } from '../../../../types/post';
 import type { PostRepository } from '../../../../types/ports/post_repository';
 
@@ -52,11 +53,16 @@ async function renderHtml(entry: PostEntry): Promise<string> {
   return (await htmlContainer()).renderToString(Content);
 }
 
-/** The one read of the collection: published pieces, newest first. */
+/**
+ * The one read of the collection: published pieces, newest first. Every
+ * entry, draft or not, must hold its own slug, or the build fails.
+ */
 export async function listPostDocuments(): Promise<readonly PostDocument[]> {
-  const entries = await getCollection('posts');
-  return entries
-    .map(toDocument)
+  const documents = (await getCollection('posts')).map(toDocument);
+  assertUniqueSlugs(
+    documents.map(({ entry, post }) => ({ id: entry.id, slug: post.slug }))
+  );
+  return documents
     .filter(({ post }) => isPublished(post))
     .sort((first, second) => comparePostsByRecency(first.post, second.post));
 }

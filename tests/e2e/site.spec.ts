@@ -1,3 +1,6 @@
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { expect, test } from '@playwright/test';
 
 import {
@@ -6,6 +9,8 @@ import {
   BACKGROUND_STILL_FADE_SECONDS,
   BACKGROUND_STILL_HOLD_SECONDS,
 } from '../../logic/media/background_video';
+import { stripContentExtension } from '../../logic/posts/content_files';
+import { slugify } from '../../logic/text/slugify';
 import {
   BASE_PATH_FIXTURE,
   FIXTURE_ASSETS_DIR,
@@ -15,6 +20,38 @@ import {
   withBuiltRuntime,
   withRuntime,
 } from '../support/runtime-server';
+
+/** The fixture whose name Astro's default entry id would have rewritten. */
+const PUNCTUATED_FIXTURE = "don't-panic-v1.2.md";
+
+/** Throwaway content directories for builds that must fail. */
+const CONTENT_CASES = 'test-results/content-cases';
+
+async function writeContentCase(
+  name: string,
+  files: Readonly<Record<string, string>>
+): Promise<string> {
+  const directory = join(CONTENT_CASES, name);
+  await rm(directory, { recursive: true, force: true });
+  await mkdir(directory, { recursive: true });
+  for (const [file, contents] of Object.entries(files)) {
+    await writeFile(join(directory, file), contents);
+  }
+  return directory;
+}
+
+function casePiece(title: string, extraFrontMatter = ''): string {
+  return [
+    '---',
+    `title: '${title}'`,
+    "description: 'A content case.'",
+    'publishedAt: 2026-01-10',
+    `${extraFrontMatter}---`,
+    '',
+    'Body.',
+    '',
+  ].join('\n');
+}
 
 /** One entry the page records about a still, stamped by the browser clock. */
 type StillEvent = {
@@ -453,6 +490,59 @@ test('RMET-E2E-011 carries the rendered body of every piece in the feed', async 
   );
 });
 
+test('RMET-E2E-012 serves a punctuated, dotted file name at the slug slugify gives it', async ({
+  page,
+}) => {
+  const slug = slugify(stripContentExtension(PUNCTUATED_FIXTURE));
+  expect(slug).toBe('don-t-panic-v1-2');
+  await withBuiltRuntime(
+    { contentDir: FIXTURE_CONTENT_DIR },
+    async ({ baseURL }) => {
+      await page.goto(`${baseURL}/`);
+      const card = page.locator(
+        `[data-testid="post-card"] a[href="/writings/${slug}"]`
+      );
+      await expect(card).toHaveCount(1);
+      await card.click();
+      await page.waitForLoadState('domcontentloaded');
+      expect(page.url()).toBe(`${baseURL}/writings/${slug}`);
+      await expect(page.locator('article h1')).toHaveText("Don't panic, v1.2");
+      await captureRoute(page, 'rmet-e2e-012', '/punctuated-piece');
+
+      // the address Astro's own github-slugged entry id would have produced
+      const legacy = await page.request.get(
+        `${baseURL}/writings/dont-panic-v12`
+      );
+      expect(legacy.status()).toBe(404);
+      for (const route of ['/rss.xml', '/sitemap.xml']) {
+        const response = await page.request.get(`${baseURL}${route}`);
+        const content = await response.text();
+        expect(content).toContain(`/writings/${slug}<`);
+        expect(content).not.toContain('/writings/dont-panic-v12');
+      }
+    }
+  );
+});
+
+test('RMET-E2E-013 fails the build on a front-matter slug, naming the file', async () => {
+  const contentDir = await writeContentCase('front-matter-slug', {
+    'moved.md': casePiece('Moved', "slug: 'elsewhere'\n"),
+  });
+  await expect(
+    withBuiltRuntime({ contentDir }, async () => {})
+  ).rejects.toThrow(/moved\.md[\s\S]*slug[\s\S]*rename the file/);
+});
+
+test('RMET-E2E-014 fails the build when two files share a slug, naming both', async () => {
+  const contentDir = await writeContentCase('shared-slug', {
+    'twin.md': casePiece('Twin in Markdown'),
+    'twin.mdx': casePiece('Twin in MDX'),
+  });
+  await expect(
+    withBuiltRuntime({ contentDir }, async () => {})
+  ).rejects.toThrow('Content files twin.md and twin.mdx share the slug "twin"');
+});
+
 test('RMET-VERSIONS-E2E-001 keeps review copies out of pages, feed, and sitemap', async ({
   page,
 }) => {
@@ -460,7 +550,7 @@ test('RMET-VERSIONS-E2E-001 keeps review copies out of pages, feed, and sitemap'
     { contentDir: FIXTURE_CONTENT_DIR },
     async ({ baseURL }) => {
       await page.goto(`${baseURL}/`);
-      await expect(page.locator('[data-testid="post-card"]')).toHaveCount(3);
+      await expect(page.locator('[data-testid="post-card"]')).toHaveCount(4);
       await expect(page.locator('main')).not.toContainText(
         'Editorial review only'
       );
@@ -474,8 +564,16 @@ test('RMET-VERSIONS-E2E-001 keeps review copies out of pages, feed, and sitemap'
         expect(response.status()).toBe(200);
         const content = await response.text();
         expect(content).not.toContain('EDITORIAL_REVIEW_ONLY');
-        expect(content).not.toContain('compose20260908');
-        expect(content).not.toContain('transcribed20260908');
+        // the slug a leaked review copy would carry; each archive's slug
+        // starts with its review copy's, so this covers them too
+        for (const reviewCopy of [
+          'first-fixture-piece.compose.20260908_143205.md',
+          'mdx-fixture-piece.transcribed.20260908_143205.mdx',
+        ]) {
+          expect(content).not.toContain(
+            slugify(stripContentExtension(reviewCopy))
+          );
+        }
       }
       await captureRoute(page, 'rmet-versions-e2e-001', '/original');
     }
