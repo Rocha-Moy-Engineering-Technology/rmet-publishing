@@ -17,28 +17,28 @@ function source(overrides: Partial<PostSource> = {}): PostSource {
 }
 
 describe('mapping content to a post', () => {
-  test('RMET-UNIT-070 carries the front matter onto the post', () => {
+  test('RMET-UNIT-070 carries the front matter onto the post (A6.21)', () => {
     const post = toPost(source());
     expect(post.title).toBe('Agentic workflows');
     expect(post.description).toBe('How agents get work done.');
     expect(post.publishedAt.toISOString()).toBe('2026-02-01T00:00:00.000Z');
   });
 
-  test('RMET-UNIT-071 derives the slug from the file identifier', () => {
+  test('RMET-UNIT-071 derives the slug from the file identifier (A6.19)', () => {
     expect(toPost(source({ id: '2026/Agentic Workflows' })).slug).toBe(
       'agentic-workflows'
     );
   });
 
-  test('RMET-UNIT-075 strips a Markdown extension from the identifier', () => {
+  test('RMET-UNIT-075 strips a Markdown extension from the identifier (A6.19)', () => {
     expect(toPost(source({ id: 'notes/latency.md' })).slug).toBe('latency');
   });
 
-  test('RMET-UNIT-076 strips an MDX extension from the identifier', () => {
+  test('RMET-UNIT-076 strips an MDX extension from the identifier (A6.19)', () => {
     expect(toPost(source({ id: 'notes/latency.mdx' })).slug).toBe('latency');
   });
 
-  test('RMET-UNIT-072 defaults the optional front matter', () => {
+  test('RMET-UNIT-072 defaults the optional front matter (A6.21)', () => {
     const post = toPost(source());
     expect(post.tags).toEqual([]);
     expect(post.authors).toEqual([]);
@@ -50,7 +50,7 @@ describe('mapping content to a post', () => {
     expect(post.canonicalUrl).toBeUndefined();
   });
 
-  test('RMET-UNIT-073 keeps the scholarly front matter of a paper', () => {
+  test('RMET-UNIT-073 keeps the scholarly front matter of a paper (A6.21)', () => {
     const post = toPost(
       source({
         data: {
@@ -78,7 +78,7 @@ describe('mapping content to a post', () => {
     expect(post.updatedAt?.toISOString()).toBe('2026-04-01T00:00:00.000Z');
   });
 
-  test('RMET-UNIT-074 estimates the reading time from the body', () => {
+  test('RMET-UNIT-074 estimates the reading time from the body (A6.21)', () => {
     expect(toPost(source()).readingMinutes).toBe(2);
   });
 });

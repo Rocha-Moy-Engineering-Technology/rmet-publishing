@@ -1,50 +1,28 @@
 import { expect } from '@playwright/test';
-import { createBdd, test } from 'playwright-bdd';
+import { createBdd } from 'playwright-bdd';
 
 import {
-  FIXTURE_CONTENT_DIR,
   FIXTURE_SUBSCRIBE_ACTION,
   FIXTURE_SUBSCRIBE_EMAIL_FIELD,
   captureRoute,
-  withBuiltRuntime,
   type Runtime,
 } from '../../support/runtime-server';
+import { test } from './fixtures';
 
 const { Given, When, Then, After } = createBdd(test);
 
 const READER_EMAIL = 'reader@example.com';
 
 let runtime: Runtime | undefined;
-let finish: (() => void) | undefined;
-let running: Promise<unknown> | undefined;
 let providerPost: string | undefined;
 
-Given('the published site is running', async () => {
-  const started = new Promise<Runtime>((resolveStarted) => {
-    const closed = new Promise<void>((resolveClosed) => {
-      finish = resolveClosed;
-    });
-    running = withBuiltRuntime(
-      {
-        contentDir: FIXTURE_CONTENT_DIR,
-        subscribeAction: FIXTURE_SUBSCRIBE_ACTION,
-        subscribeEmailField: FIXTURE_SUBSCRIBE_EMAIL_FIELD,
-      },
-      async (started) => {
-        resolveStarted(started);
-        await closed;
-      }
-    );
-  });
-  runtime = await started;
+/** The worker already built and serves this site; the step only adopts it. */
+Given('the published site is running', async ({ subscribeSite }) => {
+  runtime = subscribeSite;
 });
 
 After(async () => {
-  finish?.();
-  await running;
   runtime = undefined;
-  finish = undefined;
-  running = undefined;
 });
 
 function baseURL(): string {

@@ -24,10 +24,10 @@
     "test:generated": "npm run validate && npm run test:integration && npm run test:bdd && npm run test:e2e && npm run test:smoke"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.3.8",
     "@astrojs/mdx": "^7.0.8",
     "astro": "~7.2.8",
-    "serve": "14.2.6"
+    "serve": "14.2.6",
+    "vite": "^8.2.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

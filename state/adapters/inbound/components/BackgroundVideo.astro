@@ -86,6 +86,7 @@ const players = [0, 1];
   let active = 0;
   let muted = true;
   let videoStarted = false;
+  let stillsStarted = false;
 
   const prepare = (player: HTMLVideoElement): void => {
     player.playbackRate = BACKGROUND_PLAYBACK_RATE;
@@ -136,19 +137,21 @@ const players = [0, 1];
     );
   };
 
+  /** Points a player at its sources and loads it, without playing it yet. */
+  const attach = (player: HTMLVideoElement): void => {
+    for (const source of Array.from(player.querySelectorAll('source'))) {
+      const href = source.dataset.src;
+      if (href) source.src = href;
+    }
+    player.load();
+    prepare(player);
+  };
+
   /** Attaches the video only on wide screens, so phones fetch none of it. */
   const startVideo = (): void => {
     if (videoStarted || players.length === 0) return;
     videoStarted = true;
-    for (const player of players) {
-      for (const source of Array.from(player.querySelectorAll('source'))) {
-        const href = source.dataset.src;
-        if (href) source.src = href;
-      }
-      player.load();
-      prepare(player);
-    }
-    if (control) control.hidden = false;
+    for (const player of players) attach(player);
     play(players[active]);
     players[active].addEventListener('loadedmetadata', () =>
       play(players[active])
@@ -185,9 +188,10 @@ const players = [0, 1];
     }, BACKGROUND_STILL_FADE_SECONDS * 1000);
   };
 
-  /** Attaches the stills and shows the first; narrow screens see these. */
+  /** Attaches the stills once and shows the first; narrow screens see these. */
   const startStills = (): void => {
-    if (stills.length === 0) return;
+    if (stillsStarted || stills.length === 0) return;
+    stillsStarted = true;
     for (const image of stills) {
       image.style.transitionDuration = `${BACKGROUND_STILL_FADE_SECONDS}s`;
       const href = image.dataset.src;
@@ -196,18 +200,39 @@ const players = [0, 1];
     void ready(stills[0]).then(() => show(0));
   };
 
-  control?.addEventListener('click', () => {
-    muted = !muted;
+  /** Sets the sound on both players, updates the control, and plays on. */
+  const applySound = (value: boolean): void => {
+    muted = value;
     for (const player of players) player.muted = muted;
     describe();
     play(players[active]);
-  });
+  };
 
-  startStills();
-  if (wide.matches) startVideo();
-  wide.addEventListener('change', () => {
+  control?.addEventListener('click', () => applySound(!muted));
+
+  /**
+   * The control belongs to the visible video: it shows only once the video
+   * has started and while the screen is wide. A narrowing screen hides the
+   * video, so it also turns the sound off rather than leave it playing unseen.
+   */
+  const syncControl = (): void => {
+    if (!control || !videoStarted) return;
+    control.hidden = !wide.matches;
+    if (control.hidden && !muted) applySound(true);
+  };
+
+  /**
+   * The stylesheet shows the video only on wide screens and the stills only
+   * below them, so each starts, and is fetched, only where it can be seen.
+   */
+  const startForWidth = (): void => {
     if (wide.matches) startVideo();
-  });
+    else startStills();
+    syncControl();
+  };
+
+  startForWidth();
+  wide.addEventListener('change', startForWidth);
   still.addEventListener('change', () => {
     if (videoStarted) play(players[active]);
   });

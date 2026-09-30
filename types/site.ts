@@ -20,6 +20,14 @@ export interface NavigationLink extends NavigationItem {
 
 export type AnchorAttributes = Readonly<Record<string, string>>;
 
+/** What the build reads from the environment before Astro starts. */
+export interface BuildSettings {
+  readonly site: string;
+  readonly base: string;
+  readonly assetsDirectory: string;
+  readonly contentDirectory: string;
+}
+
 export interface SiteConfig {
   readonly name: string;
   readonly publicationTitle: string;

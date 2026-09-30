@@ -6,7 +6,7 @@ import {
   withRuntime,
 } from '../support/runtime-server';
 
-test('ASTRO-GEN-E2E-001 renders every HTML route', async ({ page }) => {
+test('ASTRO-GEN-E2E-001 renders every HTML route (A6.14)', async ({ page }) => {
   await withRuntime(async ({ baseURL }) => {
     for (const route of htmlRoutes()) {
       const response = await page.goto(`${baseURL}${route}`);

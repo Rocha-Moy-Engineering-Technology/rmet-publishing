@@ -16,30 +16,11 @@ const FEED_ROUTES = [
 ] as const;
 
 export const BASE_PATH_FIXTURE = '/rmet-publishing';
-export const FIXTURE_CONTENT_DIR = 'tests/fixtures/content';
-export const FIXTURE_ASSETS_DIR = 'tests/fixtures/public';
 /** A provider address the suites intercept; nothing is ever sent to it. */
 export const FIXTURE_SUBSCRIBE_ACTION = 'https://subscribe.example/form';
 export const FIXTURE_SUBSCRIBE_EMAIL_FIELD = 'email_address';
-const BUILD_ROOT = 'test-results/built-site';
 
 export type Runtime = { baseURL: string; basePath: string };
-
-export type BuildOptions = {
-  basePath?: string;
-  contentDir?: string;
-  assetsDir?: string;
-  subscribeAction?: string;
-  subscribeEmailField?: string;
-};
-
-const BUILD_VARIABLES: Readonly<Record<keyof BuildOptions, string>> = {
-  basePath: 'PUBLIC_BASE_PATH',
-  contentDir: 'PUBLIC_CONTENT_DIR',
-  assetsDir: 'PUBLIC_ASSETS_DIR',
-  subscribeAction: 'PUBLIC_SUBSCRIBE_ACTION',
-  subscribeEmailField: 'PUBLIC_SUBSCRIBE_EMAIL_FIELD',
-};
 
 type Process = {
   baseURL: string;
@@ -81,7 +62,11 @@ export async function captureRoute(
   }
 }
 
-/** Serves the checked-in production build, which carries no content. */
+/**
+ * Runs `npm run start` over dist/, which the global setup
+ * (production-build.setup.ts) rebuilt with explicit, blank settings: the real
+ * content folder, so whatever pieces are published, but never a local .env.
+ */
 export async function withRuntime<T>(
   action: (runtime: Runtime) => Promise<T>
 ): Promise<T> {
@@ -93,60 +78,30 @@ export async function withRuntime<T>(
   }
 }
 
+export type StaticServer = { runtime: Runtime; stop: () => Promise<void> };
+
 /**
- * Builds the site from fixture content (optionally under a base path) and
- * serves it the way a static host would, then tears both down.
+ * Serves an already built folder the way a static host would; the site is
+ * under basePath inside root. Stop it with the returned stop().
  */
-export async function withBuiltRuntime<T>(
-  options: BuildOptions,
-  action: (runtime: Runtime) => Promise<T>
-): Promise<T> {
-  const basePath = options.basePath ?? '';
-  const outDir = `${BUILD_ROOT}${basePath}`;
-  await build(outDir, options);
+export async function serveStatic(
+  root: string,
+  basePath: string
+): Promise<StaticServer> {
   const port = await getPort();
-  const child = spawn(
-    'npx',
-    ['serve', '-l', `tcp://0.0.0.0:${port}`, BUILD_ROOT],
-    {
-      cwd: process.cwd(),
-      detached: process.platform !== 'win32',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    }
-  );
+  const child = spawn('npx', ['serve', '-l', `tcp://0.0.0.0:${port}`, root], {
+    cwd: process.cwd(),
+    detached: process.platform !== 'win32',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
   const baseURL = `http://127.0.0.1:${port}`;
   try {
     await waitForAddress(`${baseURL}${basePath}/`, child);
-    return await action({ baseURL, basePath });
-  } finally {
+  } catch (error) {
     await stopProcess(child);
+    throw error;
   }
-}
-
-function buildEnvironment(options: BuildOptions): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env };
-  for (const [option, variable] of Object.entries(BUILD_VARIABLES)) {
-    const value = options[option as keyof BuildOptions];
-    if (value) env[variable] = value;
-  }
-  return env;
-}
-
-async function build(outDir: string, options: BuildOptions): Promise<void> {
-  const child = spawn('npx', ['astro', 'build', '--outDir', outDir], {
-    cwd: process.cwd(),
-    env: buildEnvironment(options),
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  let output = '';
-  child.stdout?.on('data', (chunk: Buffer) => {
-    output += chunk.toString();
-  });
-  child.stderr?.on('data', (chunk: Buffer) => {
-    output += chunk.toString();
-  });
-  const [code] = (await once(child, 'exit')) as [number | null];
-  if (code !== 0) throw new Error(`Build failed:\n${output}`);
+  return { runtime: { baseURL, basePath }, stop: () => stopProcess(child) };
 }
 
 async function startProductionServer(): Promise<Process> {

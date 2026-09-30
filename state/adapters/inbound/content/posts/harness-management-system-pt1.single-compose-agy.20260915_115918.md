@@ -131,7 +131,7 @@ Just as good software engineering keeps application code modular and DRY, the co
 
 ### Defining the Agent: Harness, Context, Tooling, and Model
 
-Within this system, we strictly distinguish between a *harness* and an *agent*:
+Within this system, we strictly distinguish between a _harness_ and an _agent_:
 
 - A **harness** is the external software environment (such as Claude Code, Codex, or Cursor) that orchestrates execution.
 - An **agent** is a concrete instance of a harness configured with dedicated context and specific tooling, powered by a chosen model.

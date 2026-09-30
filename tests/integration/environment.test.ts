@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('site environment adapter', () => {
-  test('RMET-INTEGRATION-001 exposes every public variable the site reads', () => {
+  test('RMET-INTEGRATION-001 exposes every public variable the site reads (A6.18)', () => {
     const snapshot = siteEnvironment().snapshot();
     for (const key of SUBSCRIBE_ENVIRONMENT_KEYS) {
       expect(Object.hasOwn(snapshot, key)).toBe(true);
@@ -20,7 +20,7 @@ describe('site environment adapter', () => {
     expect(Object.hasOwn(snapshot, 'PUBLIC_CONTACT_EMAIL')).toBe(true);
   });
 
-  test('RMET-INTEGRATION-004 resolves subscription settings from the real environment', () => {
+  test('RMET-INTEGRATION-004 resolves subscription settings from the real environment (A6.7)', () => {
     vi.stubEnv('PUBLIC_SUBSCRIBE_ACTION', 'https://subscribe.example/form');
     vi.stubEnv('PUBLIC_SUBSCRIBE_EMAIL_FIELD', 'email_address');
     expect(resolveSubscribeSettings(siteEnvironment().snapshot())).toEqual({
@@ -29,7 +29,7 @@ describe('site environment adapter', () => {
     });
   });
 
-  test('RMET-INTEGRATION-005 leaves subscriptions unconfigured when the address is absent', () => {
+  test('RMET-INTEGRATION-005 leaves subscriptions unconfigured when the address is absent (A6.9)', () => {
     vi.stubEnv('PUBLIC_SUBSCRIBE_ACTION', '');
     expect(
       resolveSubscribeSettings(siteEnvironment().snapshot())

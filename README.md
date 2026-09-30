@@ -17,50 +17,32 @@ icons, and a link on the contact page.
 
 ## Publishing a piece
 
-From the agent root, `rmet_publishing.py` creates, lists, publishes,
-unpublishes, opens, renames, and deletes pieces, and manages their editorial
-history:
+Pieces are Markdown or MDX files in `state/adapters/inbound/content/posts/`;
+the file name is the `/writings/<slug>` address. Write a new piece with
+`draft: true` in its front matter, preview it with `npm run dev`, and set
+`draft: false` (or remove the line) when it should appear on the next build.
+Then, from this folder:
 
 ```sh
-rmet_publishing.py create --title "Latency notes"
-rmet_publishing.py list
-rmet_publishing.py publish latency-notes
-rmet_publishing.py unpublish "Latency notes"
-rmet_publishing.py open latency-notes
-rmet_publishing.py rename latency-notes better-notes
-rmet_publishing.py delete latency-notes
-rmet_publishing.py versions latency-notes
-rmet_publishing.py diff latency-notes.single-compose.20260901_120000.md
-rmet_publishing.py migrate latency-notes.single-compose.20260901_120000.md
-rmet_publishing.py archive latency-notes
-rmet_publishing.py restore latency-notes.single-compose.20260901_120000.migrated.20260902_090000.md
+npm run format          # Prettier rewrites content too; the gate checks it
+npm run validate        # format check, lint, astro check, unit coverage, build
+npm run test:generated  # validate plus integration, BDD, end-to-end, and smoke
 ```
 
-`create` writes `state/adapters/inbound/content/posts/<slug>.md` with
-`draft: true`. Pass `--format mdx` for an MDX file. The file name is the
-`/writings/<slug>` address. The script prints the full path and opens the file
-with `code`. `publish` / `unpublish` / `open` / `delete` take a title or a
-slug; `rename` takes the current one and the new one. `list` shows every
-piece, draft and published. Set `draft: false` (or pass `--publish` on create,
-or run `publish`) when the piece should appear on the next build.
+From the agent root, `./sh/validate.sh publishing` runs the same
+`npm run validate` gate.
 
-`versions` lists the timestamped `.transcribed.<timestamp>`,
-`.single-compose.<timestamp>`, `.single-compose-<harness>.<timestamp>`, and
-`.multi-compose.<timestamp>` siblings (plus legacy `.compose.<timestamp>`) that
-Transcribe, Single Compose, and Multi Compose leave beside a piece;
-`diff` opens one against its original in VS Code; `migrate` archives the
-original as `.migrated.<timestamp>` and adopts the version as the new draft;
-`archive` lists the archived originals; `restore` copies one back as a draft,
-keeping the current original as `.before-restore.<timestamp>`. The content
-collection ingests only originals: review siblings and archives are excluded
-from routes, listings, the feed, and the sitemap whatever their front matter.
+Transcribe, Single Compose, and Multi Compose leave timestamped siblings beside
+a piece: `.transcribed.<timestamp>`, `.single-compose.<timestamp>`,
+`.single-compose-<harness>.<timestamp>`, `.multi-compose.<timestamp>`, and the
+legacy `.compose.<timestamp>`. A replaced original kept beside a piece is named
+`.migrated.<timestamp>` or `.before-restore.<timestamp>`. The content
+collection ingests only originals: siblings and archives never reach routes,
+listings, the feed, or the sitemap, whatever their front matter. To adopt a
+version, give it the piece's own file name. The folder may also hold draft
+working copies marked `draft: true`; they are never listed or built either.
 
-The deploy workflow runs `prettier --check` over the repository, content
-included. Files the script writes pass as written; run `npm run format` before
-pushing a piece whose body you wrote by hand.
-
-You can also add a Markdown or MDX file under
-`state/adapters/inbound/content/posts/` by hand. Front matter:
+Front matter:
 
 ```yaml
 title: 'A title'
@@ -161,12 +143,13 @@ RMET-UNIT-035 fails when the running Node's Unicode version drifts from it.
 
 ## Configuration
 
-Copy `.env.example` and fill it in. `PUBLIC_SITE_URL` sets the address used for
-canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL` overrides the
-contact address. `PUBLIC_SUBSCRIBE_ACTION` (and `PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the
-provider reads a field other than `email`) switches on the envelope icon and
-its subscribe popup; without it only the feed icon shows. `PUBLIC_BASE_PATH` sets the
-subpath the site is served from.
+Copy `.env.example` to `.env` and fill it in; a variable exported in the shell
+wins over the file, and a blank value counts as unset. `PUBLIC_SITE_URL` sets the
+address used for canonical links, the feed, and the sitemap. `PUBLIC_CONTACT_EMAIL`
+overrides the contact address. `PUBLIC_SUBSCRIBE_ACTION` (and
+`PUBLIC_SUBSCRIBE_EMAIL_FIELD` when the provider reads a field other than
+`email`) switches on the envelope icon and its subscribe popup; without it only
+the feed icon shows. `PUBLIC_BASE_PATH` sets the subpath the site is served from.
 
 ## GitHub Pages
 

@@ -19,14 +19,14 @@ import {
 } from '../../logic/media/background_video';
 
 describe('background video', () => {
-  test('RMET-UNIT-180 offers WebM before MP4 so browsers take the smaller file', () => {
+  test('RMET-UNIT-180 offers WebM before MP4 so browsers take the smaller file (A6.16)', () => {
     expect(backgroundVideoCandidates().map((source) => source.file)).toEqual([
       'background.webm',
       'background.mp4',
     ]);
   });
 
-  test('RMET-UNIT-181 addresses each candidate under the video directory with its media type', () => {
+  test('RMET-UNIT-181 addresses each candidate under the video directory with its media type (A6.16)', () => {
     expect(backgroundVideoCandidates()).toEqual([
       {
         file: 'background.webm',
@@ -42,13 +42,13 @@ describe('background video', () => {
     expect(BACKGROUND_VIDEO_DIRECTORY).toBe('/video');
   });
 
-  test('RMET-UNIT-187 plays the backdrop at a usable speed', () => {
+  test('RMET-UNIT-187 plays the backdrop at a usable speed (A6.16)', () => {
     expect(BACKGROUND_PLAYBACK_RATE).toBeGreaterThan(0);
     expect(BACKGROUND_PLAYBACK_RATE).toBeLessThanOrEqual(2);
     expect(Number.isFinite(BACKGROUND_PLAYBACK_RATE)).toBe(true);
   });
 
-  test('RMET-UNIT-182 reports no media when the directory is empty', () => {
+  test('RMET-UNIT-182 reports no media when the directory is empty (A6.16)', () => {
     expect(backgroundMedia([])).toEqual({
       sources: [],
       stills: [],
@@ -56,7 +56,7 @@ describe('background video', () => {
     });
   });
 
-  test('RMET-UNIT-183 keeps only the formats that are actually present', () => {
+  test('RMET-UNIT-183 keeps only the formats that are actually present (A6.16)', () => {
     expect(backgroundMedia(['background.mp4']).sources).toEqual([
       {
         file: 'background.mp4',
@@ -66,7 +66,7 @@ describe('background video', () => {
     ]);
   });
 
-  test('RMET-UNIT-184 returns both formats and the poster when all are present', () => {
+  test('RMET-UNIT-184 returns both formats and the poster when all are present (A6.16)', () => {
     const media = backgroundMedia([
       'background.mp4',
       'background.webm',
@@ -79,7 +79,7 @@ describe('background video', () => {
     expect(media.poster).toBe('/video/background-poster.jpg');
   });
 
-  test('RMET-UNIT-185 ignores files that are not the background media', () => {
+  test('RMET-UNIT-185 ignores files that are not the background media (A6.16)', () => {
     expect(backgroundMedia(['other.mp4', 'notes.txt'])).toEqual({
       sources: [],
       stills: [],
@@ -87,39 +87,39 @@ describe('background video', () => {
     });
   });
 
-  test('RMET-UNIT-186 offers a poster only when the poster file exists', () => {
+  test('RMET-UNIT-186 offers a poster only when the poster file exists (A6.16)', () => {
     expect(backgroundMedia(['background.mp4']).poster).toBeUndefined();
   });
 });
 
 describe('handing one player over to the next', () => {
-  test('RMET-UNIT-188 waits until the fade window opens', () => {
+  test('RMET-UNIT-188 waits until the fade window opens (A6.16)', () => {
     expect(shouldHandOver(20, 28.125, 0.6)).toBe(false);
     expect(shouldHandOver(27.5, 28.125, 0.6)).toBe(false);
   });
 
-  test('RMET-UNIT-189 hands over once inside the fade window', () => {
+  test('RMET-UNIT-189 hands over once inside the fade window (A6.16)', () => {
     expect(shouldHandOver(27.525, 28.125, 0.6)).toBe(true);
     expect(shouldHandOver(28.125, 28.125, 0.6)).toBe(true);
   });
 
-  test('RMET-UNIT-190 refuses to hand over on an unknown duration', () => {
+  test('RMET-UNIT-190 refuses to hand over on an unknown duration (A6.16)', () => {
     expect(shouldHandOver(1, Number.NaN, 0.6)).toBe(false);
     expect(shouldHandOver(1, Number.POSITIVE_INFINITY, 0.6)).toBe(false);
   });
 
-  test('RMET-UNIT-191 refuses to hand over on a clip shorter than the fade', () => {
+  test('RMET-UNIT-191 refuses to hand over on a clip shorter than the fade (A6.16)', () => {
     expect(shouldHandOver(0.3, 0.5, 0.6)).toBe(false);
   });
 
-  test('RMET-UNIT-192 uses the configured window by default', () => {
+  test('RMET-UNIT-192 uses the configured window by default (A6.16)', () => {
     expect(BACKGROUND_HANDOVER_SECONDS).toBeGreaterThan(0);
     expect(
       shouldHandOver(28.125 - BACKGROUND_HANDOVER_SECONDS / 2, 28.125)
     ).toBe(true);
   });
 
-  test('RMET-UNIT-195 hands over for as long as the clips crossfade', () => {
+  test('RMET-UNIT-202 hands over for as long as the clips crossfade (A6.16)', () => {
     // the loop is the fourth join, so it has to last exactly as long as the
     // three the file already carries
     expect(BACKGROUND_HANDOVER_SECONDS).toBe(BACKGROUND_JOIN_CROSSFADE_SECONDS);
@@ -127,7 +127,7 @@ describe('handing one player over to the next', () => {
 });
 
 describe('stills for narrow screens', () => {
-  test('RMET-UNIT-193 collects the stills that are present, in order', () => {
+  test('RMET-UNIT-193 collects the stills that are present, in order (A6.17)', () => {
     expect(
       backgroundMedia([
         'background-still-2.webp',
@@ -141,7 +141,7 @@ describe('stills for narrow screens', () => {
     ]);
   });
 
-  test('RMET-UNIT-194 keeps a gap in the numbering from breaking the sequence', () => {
+  test('RMET-UNIT-194 keeps a gap in the numbering from breaking the sequence (A6.17)', () => {
     expect(
       backgroundMedia([
         'background-still-1.webp',
@@ -153,31 +153,31 @@ describe('stills for narrow screens', () => {
     ]);
   });
 
-  test('RMET-UNIT-195 reports no stills when none are present', () => {
+  test('RMET-UNIT-195 reports no stills when none are present (A6.17)', () => {
     expect(backgroundMedia(['background.mp4']).stills).toEqual([]);
   });
 
-  test('RMET-UNIT-196 names candidates under the video directory convention', () => {
+  test('RMET-UNIT-196 names candidates under the video directory convention (A6.17)', () => {
     expect(backgroundStillCandidates()[0]).toBe('background-still-1.webp');
     expect(backgroundStillCandidates()).toHaveLength(9);
   });
 
-  test('RMET-UNIT-197 advances through the stills and wraps around', () => {
+  test('RMET-UNIT-197 advances through the stills and wraps around (A6.17)', () => {
     expect(nextStillIndex(0, 3)).toBe(1);
     expect(nextStillIndex(1, 3)).toBe(2);
     expect(nextStillIndex(2, 3)).toBe(0);
   });
 
-  test('RMET-UNIT-198 stays put when there is nothing to advance through', () => {
+  test('RMET-UNIT-198 stays put when there is nothing to advance through (A6.17)', () => {
     expect(nextStillIndex(0, 0)).toBe(0);
     expect(nextStillIndex(3, -1)).toBe(0);
   });
 
-  test('RMET-UNIT-199 keeps the video for wide viewports only', () => {
+  test('RMET-UNIT-199 keeps the video for wide viewports only (A6.16)', () => {
     expect(BACKGROUND_WIDE_VIEWPORT).toBe('(min-width: 768px)');
   });
 
-  test('RMET-UNIT-201 crops a portrait screen around the subject of each still', () => {
+  test('RMET-UNIT-201 crops a portrait screen around the subject of each still (A6.17)', () => {
     // the lunar lander stands at the right of its frame; a centred crop
     // would show Earth and the ground and lose the lander
     expect(BACKGROUND_STILL_FOCUS['background-still-2.webp']).toBe('94% 50%');
@@ -204,7 +204,7 @@ describe('stills for narrow screens', () => {
     expect(BACKGROUND_STILL_DEFAULT_FOCUS).toBe('50% 50%');
   });
 
-  test('RMET-UNIT-200 holds each still alone for three seconds, then dissolves for no longer than that', () => {
+  test('RMET-UNIT-200 holds each still alone for three seconds, then dissolves for no longer than that (A6.17)', () => {
     expect(BACKGROUND_STILL_HOLD_SECONDS).toBe(3);
     expect(BACKGROUND_STILL_FADE_SECONDS).toBeGreaterThan(0);
     expect(BACKGROUND_STILL_FADE_SECONDS).toBeLessThanOrEqual(

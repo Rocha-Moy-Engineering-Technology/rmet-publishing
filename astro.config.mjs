@@ -3,8 +3,11 @@ import tailwindcss from '@tailwindcss/vite';
 import serveConfig from './serve.json';
 import { defineConfig } from 'astro/config';
 
-import { astroBase } from './logic/site/base_path';
-import { SITE } from './logic/site/site_config';
+import { resolveBuildSettings } from './logic/site/build_settings';
+import { buildEnvironment } from './state/adapters/outbound/environment/build_environment';
+
+/** .env files and the shell, the shell winning; see build_environment.ts. */
+const settings = resolveBuildSettings(buildEnvironment().snapshot());
 
 /** @type {import('vite').Plugin} */
 const serveConfigPlugin = {
@@ -19,13 +22,13 @@ const serveConfigPlugin = {
 };
 
 export default defineConfig({
-  site: process.env.PUBLIC_SITE_URL ?? SITE.defaultSiteUrl,
-  base: astroBase(process.env.PUBLIC_BASE_PATH),
+  site: settings.site,
+  base: settings.base,
   redirects: {
     '/writings': '/',
   },
   srcDir: './state/adapters/inbound',
-  publicDir: process.env.PUBLIC_ASSETS_DIR ?? './state/adapters/inbound/public',
+  publicDir: settings.assetsDirectory,
   output: 'static',
   integrations: [mdx()],
   vite: {

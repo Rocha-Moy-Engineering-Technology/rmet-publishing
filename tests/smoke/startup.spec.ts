@@ -6,7 +6,7 @@ import {
   withRuntime,
 } from '../support/runtime-server';
 
-test('ASTRO-GEN-SMOKE-001 starts the production application', async ({
+test('ASTRO-GEN-SMOKE-001 starts the production application (A6.14)', async ({
   request,
 }) => {
   await withRuntime(async ({ baseURL }) => {

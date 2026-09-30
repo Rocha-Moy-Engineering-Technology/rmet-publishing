@@ -10,7 +10,7 @@ const options = {
 };
 
 describe('citation', () => {
-  test('RMET-UNIT-110 cites authors, year, title, publication, and address', () => {
+  test('RMET-UNIT-110 cites authors, year, title, publication, and address (A6.21)', () => {
     const post = makePost({
       title: 'On evaluation',
       authors: ['Rocha Moy, P.'],
@@ -21,7 +21,7 @@ describe('citation', () => {
     );
   });
 
-  test('RMET-UNIT-111 joins several authors with an ampersand', () => {
+  test('RMET-UNIT-111 joins several authors with an ampersand (A6.21)', () => {
     const post = makePost({
       authors: ['Rocha Moy, P.', 'Doe, J.'],
       title: 'Together',
@@ -29,14 +29,14 @@ describe('citation', () => {
     expect(formatCitation(post, options)).toContain('Rocha Moy, P. & Doe, J.');
   });
 
-  test('RMET-UNIT-112 falls back to the site author when none is named', () => {
+  test('RMET-UNIT-112 falls back to the site author when none is named (A6.21)', () => {
     const post = makePost({ authors: [], title: 'Anonymous' });
     expect(formatCitation(post, options)).toContain(
       'Pedro Henrique Rocha Moy (2026).'
     );
   });
 
-  test('RMET-UNIT-113 prefers the digital object identifier when present', () => {
+  test('RMET-UNIT-113 prefers the digital object identifier when present (A6.21)', () => {
     const post = makePost({ doi: '10.1000/example' });
     expect(formatCitation(post, options)).toContain(
       'https://doi.org/10.1000/example'

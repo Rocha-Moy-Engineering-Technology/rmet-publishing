@@ -3,17 +3,17 @@ import { describe, expect, test } from 'vitest';
 import { escapeXml } from '../../logic/text/escape_xml';
 
 describe('escapeXml', () => {
-  test('RMET-UNIT-040 escapes the five markup-significant characters', () => {
+  test('RMET-UNIT-040 escapes the five markup-significant characters (A6.10)', () => {
     expect(escapeXml('<a href="x">Tom & Jerry\'s</a>')).toBe(
       '&lt;a href=&quot;x&quot;&gt;Tom &amp; Jerry&apos;s&lt;/a&gt;'
     );
   });
 
-  test('RMET-UNIT-041 escapes ampersands before the other characters', () => {
+  test('RMET-UNIT-041 escapes ampersands before the other characters (A6.10)', () => {
     expect(escapeXml('&lt;')).toBe('&amp;lt;');
   });
 
-  test('RMET-UNIT-042 leaves plain text untouched', () => {
+  test('RMET-UNIT-042 leaves plain text untouched (A6.10)', () => {
     expect(escapeXml('plain text')).toBe('plain text');
   });
 });

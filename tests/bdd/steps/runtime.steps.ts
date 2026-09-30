@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { createBdd, test } from 'playwright-bdd';
+import { createBdd } from 'playwright-bdd';
 
 import {
   assertHealth,
@@ -7,6 +7,7 @@ import {
   htmlRoutes,
   withRuntime,
 } from '../../support/runtime-server';
+import { test } from './fixtures';
 
 const { Given, When, Then } = createBdd(test);
 

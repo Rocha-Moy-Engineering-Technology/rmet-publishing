@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { feedRoutes, withRuntime } from '../support/runtime-server';
 
-test('RMET-SMOKE-001 serves the syndication surfaces from the production runtime', async ({
+test('RMET-SMOKE-001 serves the syndication surfaces from the production runtime (A6.10)', async ({
   request,
 }) => {
   await withRuntime(async ({ baseURL }) => {
@@ -14,7 +14,7 @@ test('RMET-SMOKE-001 serves the syndication surfaces from the production runtime
   });
 });
 
-test('RMET-SMOKE-002 serves the feed icon beside the feed', async ({
+test('RMET-SMOKE-002 serves the feed icon beside the feed (A6.9)', async ({
   request,
 }) => {
   await withRuntime(async ({ baseURL }) => {

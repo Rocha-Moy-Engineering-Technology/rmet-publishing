@@ -7,13 +7,13 @@ import {
 } from '../../logic/text/format_date';
 
 describe('date formatting', () => {
-  test('RMET-UNIT-050 writes a reader-facing date in Coordinated Universal Time', () => {
+  test('RMET-UNIT-050 writes a reader-facing date in Coordinated Universal Time (A6.21)', () => {
     expect(formatDate(new Date('2026-09-01T23:30:00.000Z'))).toBe(
       '1 September 2026'
     );
   });
 
-  test('RMET-UNIT-051 writes every month name', () => {
+  test('RMET-UNIT-051 writes every month name (A6.21)', () => {
     const months = Array.from({ length: 12 }, (_, index) =>
       formatDate(new Date(Date.UTC(2026, index, 15)))
     );
@@ -22,11 +22,11 @@ describe('date formatting', () => {
     expect(new Set(months).size).toBe(12);
   });
 
-  test('RMET-UNIT-052 writes the machine-readable date', () => {
+  test('RMET-UNIT-052 writes the machine-readable date (A6.21)', () => {
     expect(toIsoDate(new Date('2026-09-01T23:30:00.000Z'))).toBe('2026-09-01');
   });
 
-  test('RMET-UNIT-053 writes the feed date in the syndication format', () => {
+  test('RMET-UNIT-053 writes the feed date in the syndication format (A6.10)', () => {
     expect(toRfc822Date(new Date('2026-09-01T12:05:09.000Z'))).toBe(
       'Tue, 01 Sep 2026 12:05:09 GMT'
     );

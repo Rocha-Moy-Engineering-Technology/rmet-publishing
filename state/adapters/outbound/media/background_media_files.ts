@@ -5,13 +5,15 @@ import {
   BACKGROUND_VIDEO_DIRECTORY,
   backgroundMedia,
 } from '../../../../logic/media/background_video';
+import { resolveBuildSettings } from '../../../../logic/site/build_settings';
 import type { BackgroundMedia } from '../../../../types/media';
-
-const DEFAULT_ASSETS_DIRECTORY = './state/adapters/inbound/public';
+import { buildEnvironment } from '../environment/build_environment';
 
 function videoDirectory(): string {
-  const assets = process.env.PUBLIC_ASSETS_DIR ?? DEFAULT_ASSETS_DIRECTORY;
-  return join(assets, BACKGROUND_VIDEO_DIRECTORY);
+  const { assetsDirectory } = resolveBuildSettings(
+    buildEnvironment().snapshot()
+  );
+  return join(assetsDirectory, BACKGROUND_VIDEO_DIRECTORY);
 }
 
 function availableFiles(): readonly string[] {

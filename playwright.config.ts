@@ -23,6 +23,10 @@ const chrome = executablePath
     };
 
 export default defineConfig({
+  globalSetup: './tests/support/production-build.setup.ts',
+  // every astro build writes its prerender chunks to the shared .astro/
+  // folder, so two workers building fixture sites at once break each other
+  workers: 1,
   fullyParallel: false,
   reporter: 'list',
   timeout: 30000,

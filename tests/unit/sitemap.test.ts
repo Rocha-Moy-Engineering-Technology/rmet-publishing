@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { buildSitemap } from '../../logic/feed/sitemap';
 
 describe('sitemap', () => {
-  test('RMET-UNIT-130 lists every address in a sitemap document', () => {
+  test('RMET-UNIT-130 lists every address in a sitemap document (A6.10)', () => {
     const sitemap = buildSitemap([{ loc: 'https://example.org/' }]);
     expect(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(
       true
@@ -14,7 +14,7 @@ describe('sitemap', () => {
     expect(sitemap).toContain('<loc>https://example.org/</loc>');
   });
 
-  test('RMET-UNIT-131 records a last modification date when it is known', () => {
+  test('RMET-UNIT-131 records a last modification date when it is known (A6.10)', () => {
     const sitemap = buildSitemap([
       {
         loc: 'https://example.org/papers/on-evaluation',
@@ -24,13 +24,13 @@ describe('sitemap', () => {
     expect(sitemap).toContain('<lastmod>2026-09-01</lastmod>');
   });
 
-  test('RMET-UNIT-132 omits the modification date when it is unknown', () => {
+  test('RMET-UNIT-132 omits the modification date when it is unknown (A6.10)', () => {
     expect(buildSitemap([{ loc: 'https://example.org/' }])).not.toContain(
       '<lastmod>'
     );
   });
 
-  test('RMET-UNIT-133 escapes markup in addresses', () => {
+  test('RMET-UNIT-133 escapes markup in addresses (A6.10)', () => {
     expect(buildSitemap([{ loc: 'https://example.org/?a=1&b=2' }])).toContain(
       '<loc>https://example.org/?a=1&amp;b=2</loc>'
     );

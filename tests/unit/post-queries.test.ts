@@ -34,12 +34,12 @@ const sameDay = makePost({
 });
 
 describe('post queries', () => {
-  test('RMET-UNIT-081 tells a published piece from a draft', () => {
+  test('RMET-UNIT-091 tells a published piece from a draft (A6.13)', () => {
     expect(isPublished(older)).toBe(true);
     expect(isPublished(draft)).toBe(false);
   });
 
-  test('RMET-UNIT-082 keeps only the pieces carrying a tag', () => {
+  test('RMET-UNIT-092 keeps only the pieces carrying a tag (A6.3)', () => {
     expect(
       postsWithTag([older, newer, sameDay], 'evaluation').map(
         (post) => post.slug
@@ -47,7 +47,7 @@ describe('post queries', () => {
     ).toEqual(['newer']);
   });
 
-  test('RMET-UNIT-083 orders the newest piece first', () => {
+  test('RMET-UNIT-093 orders the newest piece first (A6.1)', () => {
     expect(comparePostsByRecency(newer, older)).toBeLessThan(0);
     expect(comparePostsByRecency(older, newer)).toBeGreaterThan(0);
     expect(
@@ -55,7 +55,7 @@ describe('post queries', () => {
     ).toEqual(['newer', 'older']);
   });
 
-  test('RMET-UNIT-084 breaks a same-day tie by title', () => {
+  test('RMET-UNIT-094 breaks a same-day tie by title (A6.1)', () => {
     expect(comparePostsByRecency(sameDay, newer)).toBeLessThan(0);
     expect(comparePostsByRecency(newer, newer)).toBe(0);
     expect(
@@ -63,28 +63,28 @@ describe('post queries', () => {
     ).toEqual(['a-same-day', 'newer']);
   });
 
-  test('RMET-UNIT-087 counts tags and orders them by weight then name', () => {
+  test('RMET-UNIT-087 counts tags and orders them by weight then name (A6.3)', () => {
     expect(collectTags([older, newer])).toEqual([
       { tag: 'Agents', slug: 'agents', count: 2 },
       { tag: 'Evaluation', slug: 'evaluation', count: 1 },
     ]);
   });
 
-  test('RMET-UNIT-088 counts a tag once per piece regardless of spelling', () => {
+  test('RMET-UNIT-088 counts a tag once per piece regardless of spelling (A6.3)', () => {
     const shouty = makePost({ slug: 'shouty', tags: ['AGENTS'] });
     expect(collectTags([older, shouty])).toEqual([
       { tag: 'Agents', slug: 'agents', count: 2 },
     ]);
   });
 
-  test('RMET-UNIT-089 counts a tag repeated inside one piece only once', () => {
+  test('RMET-UNIT-089 counts a tag repeated inside one piece only once (A6.3)', () => {
     const repeated = makePost({ slug: 'repeated', tags: ['Agents', 'agents'] });
     expect(collectTags([repeated])).toEqual([
       { tag: 'Agents', slug: 'agents', count: 1 },
     ]);
   });
 
-  test('RMET-UNIT-090 orders equally weighted tags by name', () => {
+  test('RMET-UNIT-090 orders equally weighted tags by name (A6.3)', () => {
     const first = makePost({ slug: 'one', tags: ['Zebra'] });
     const second = makePost({ slug: 'two', tags: ['Agents'] });
     expect(collectTags([first, second]).map((tag) => tag.tag)).toEqual([

@@ -9,21 +9,21 @@ import {
 const action = 'https://buttondown.com/api/emails/embed-subscribe/rmet';
 
 describe('subscription settings', () => {
-  test('RMET-UNIT-210 names the two variables the form reads', () => {
+  test('RMET-UNIT-210 names the two variables the form reads (A6.7)', () => {
     expect(SUBSCRIBE_ENVIRONMENT_KEYS).toEqual([
       'PUBLIC_SUBSCRIBE_ACTION',
       'PUBLIC_SUBSCRIBE_EMAIL_FIELD',
     ]);
   });
 
-  test('RMET-UNIT-211 resolves the provider address with the default email field', () => {
+  test('RMET-UNIT-211 resolves the provider address with the default email field (A6.7)', () => {
     expect(DEFAULT_SUBSCRIBE_EMAIL_FIELD).toBe('email');
     expect(
       resolveSubscribeSettings({ PUBLIC_SUBSCRIBE_ACTION: action })
     ).toEqual({ action, emailField: 'email' });
   });
 
-  test('RMET-UNIT-212 resolves nothing while the provider address is unset', () => {
+  test('RMET-UNIT-212 resolves nothing while the provider address is unset (A6.9)', () => {
     expect(resolveSubscribeSettings({})).toBeUndefined();
     expect(
       resolveSubscribeSettings({ PUBLIC_SUBSCRIBE_ACTION: '   ' })
@@ -33,7 +33,7 @@ describe('subscription settings', () => {
     ).toBeUndefined();
   });
 
-  test('RMET-UNIT-213 honors a configured email field name, trimmed, and falls back on a blank one', () => {
+  test('RMET-UNIT-213 honors a configured email field name, trimmed, and falls back on a blank one (A6.7)', () => {
     expect(
       resolveSubscribeSettings({
         PUBLIC_SUBSCRIBE_ACTION: ` ${action} `,
@@ -48,7 +48,7 @@ describe('subscription settings', () => {
     ).toBe('email');
   });
 
-  test('RMET-UNIT-214 rejects a provider address that is not an https address', () => {
+  test('RMET-UNIT-214 rejects a provider address that is not an https address (A6.8)', () => {
     for (const bad of [
       '/subscribe',
       'http://subscribe.example/form',

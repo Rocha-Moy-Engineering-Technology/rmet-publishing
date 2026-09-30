@@ -8,20 +8,20 @@ import {
 } from '../../logic/site/base_path';
 
 describe('base path', () => {
-  test('RMET-UNIT-160 treats an absent, empty, or root value as no base', () => {
+  test('RMET-UNIT-160 treats an absent, empty, or root value as no base (A6.11)', () => {
     expect(normalizeBasePath(undefined)).toBe('');
     expect(normalizeBasePath('')).toBe('');
     expect(normalizeBasePath('/')).toBe('');
   });
 
-  test('RMET-UNIT-161 normalizes a project base to a single leading slash', () => {
+  test('RMET-UNIT-161 normalizes a project base to a single leading slash (A6.11)', () => {
     expect(normalizeBasePath('/rmet-publishing')).toBe('/rmet-publishing');
     expect(normalizeBasePath('rmet-publishing')).toBe('/rmet-publishing');
     expect(normalizeBasePath('/rmet-publishing/')).toBe('/rmet-publishing');
     expect(normalizeBasePath('  /rmet-publishing/  ')).toBe('/rmet-publishing');
   });
 
-  test('RMET-UNIT-162 prefixes an internal address with the base', () => {
+  test('RMET-UNIT-162 prefixes an internal address with the base (A6.11)', () => {
     expect(withBasePath('/rmet-publishing', '/blog')).toBe(
       '/rmet-publishing/blog'
     );
@@ -30,16 +30,16 @@ describe('base path', () => {
     );
   });
 
-  test('RMET-UNIT-163 keeps the home address usable under a base', () => {
+  test('RMET-UNIT-163 keeps the home address usable under a base (A6.11)', () => {
     expect(withBasePath('/rmet-publishing', '/')).toBe('/rmet-publishing/');
     expect(withBasePath('', '/')).toBe('/');
   });
 
-  test('RMET-UNIT-164 leaves an internal address alone when there is no base', () => {
+  test('RMET-UNIT-164 leaves an internal address alone when there is no base (A6.11)', () => {
     expect(withBasePath('', '/blog')).toBe('/blog');
   });
 
-  test('RMET-UNIT-165 never rewrites an address that is not site-internal', () => {
+  test('RMET-UNIT-165 never rewrites an address that is not site-internal (A6.11)', () => {
     expect(withBasePath('/rmet-publishing', 'https://github.com/phrmoy')).toBe(
       'https://github.com/phrmoy'
     );
@@ -49,7 +49,7 @@ describe('base path', () => {
     expect(withBasePath('/rmet-publishing', '#content')).toBe('#content');
   });
 
-  test('RMET-UNIT-166 strips the base from an incoming address', () => {
+  test('RMET-UNIT-166 strips the base from an incoming address (A6.11)', () => {
     expect(stripBasePath('/rmet-publishing', '/rmet-publishing/blog')).toBe(
       '/blog'
     );
@@ -57,7 +57,7 @@ describe('base path', () => {
     expect(stripBasePath('/rmet-publishing', '/rmet-publishing/')).toBe('/');
   });
 
-  test('RMET-UNIT-167 leaves an address that does not carry the base', () => {
+  test('RMET-UNIT-167 leaves an address that does not carry the base (A6.11)', () => {
     expect(stripBasePath('', '/blog')).toBe('/blog');
     expect(stripBasePath('/rmet-publishing', '/blog')).toBe('/blog');
     expect(stripBasePath('/rmet-publishing', '/rmet-publishing-notes')).toBe(
@@ -65,7 +65,7 @@ describe('base path', () => {
     );
   });
 
-  test('RMET-UNIT-168 gives Astro a base it accepts', () => {
+  test('RMET-UNIT-168 gives Astro a base it accepts (A6.11)', () => {
     expect(astroBase(undefined)).toBe('/');
     expect(astroBase('/rmet-publishing/')).toBe('/rmet-publishing');
   });

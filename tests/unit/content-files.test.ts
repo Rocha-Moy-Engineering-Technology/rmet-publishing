@@ -7,11 +7,11 @@ import {
 } from '../../logic/posts/content_files';
 
 describe('content file extensions', () => {
-  test('RMET-UNIT-080 lists Markdown and MDX as the ingestible extensions', () => {
+  test('RMET-UNIT-080 lists Markdown and MDX as the ingestible extensions (A6.12)', () => {
     expect([...CONTENT_EXTENSIONS]).toEqual(['md', 'mdx']);
   });
 
-  test('RMET-UNIT-081 builds the collection glob from those extensions', () => {
+  test('RMET-UNIT-081 builds the collection glob from those extensions (A6.12)', () => {
     expect(CONTENT_GLOB).toEqual([
       '**/*.{md,mdx}',
       '!**/*.{transcribed,compose,single-compose,multi-compose}.*.{md,mdx}',
@@ -20,19 +20,19 @@ describe('content file extensions', () => {
     ]);
   });
 
-  test('RMET-UNIT-082 leaves an identifier without an extension unchanged', () => {
+  test('RMET-UNIT-082 leaves an identifier without an extension unchanged (A6.12)', () => {
     expect(stripContentExtension('latency-notes')).toBe('latency-notes');
   });
 
-  test('RMET-UNIT-083 strips a trailing Markdown extension', () => {
+  test('RMET-UNIT-083 strips a trailing Markdown extension (A6.12)', () => {
     expect(stripContentExtension('Latency Notes.md')).toBe('Latency Notes');
   });
 
-  test('RMET-UNIT-084 strips a trailing MDX extension', () => {
+  test('RMET-UNIT-084 strips a trailing MDX extension (A6.12)', () => {
     expect(stripContentExtension('Latency Notes.mdx')).toBe('Latency Notes');
   });
 
-  test('RMET-UNIT-085 does not treat a mid-name md as an extension', () => {
+  test('RMET-UNIT-085 does not treat a mid-name md as an extension (A6.12)', () => {
     expect(stripContentExtension('mdx-notes')).toBe('mdx-notes');
   });
 });

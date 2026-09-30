@@ -6,7 +6,7 @@ import { expect, test } from 'vitest';
 import { postsCollection } from '../../state/adapters/inbound/posts_collection';
 import { loadEntries } from '../support/content-loader';
 
-test('RMET-VERSIONS-001 loader excludes editorial siblings before parsing', async () => {
+test('RMET-VERSIONS-001 loader excludes editorial siblings before parsing (A6.12)', async () => {
   const base = await mkdtemp(join(tmpdir(), 'rmet-versions-'));
   try {
     await mkdir(join(base, 'nested'));
