@@ -1,3 +1,5 @@
+// Implements the Given/When/Then assertions for publishing.feature;
+// playwright-bdd generates its runnable scenarios from these step bindings.
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
