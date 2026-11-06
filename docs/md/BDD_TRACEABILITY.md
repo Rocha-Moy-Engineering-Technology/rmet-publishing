@@ -19,9 +19,9 @@ scenario.
 
 Every scenario title, like every other test title in `tests/`, ends with the
 acceptance criterion it proves, for example `(A6.1)`; the criteria are in
-`agent_context/sdoc/modules/rmet-publishing/FEATURE_SPECS.md`, and each one
+`agent_context/docs/sdoc/modules/rmet-publishing/FEATURE_SPECS.md`, and each one
 names its tests back.
 
 Both features compile into
-`agent_context/sdoc/modules/rmet-publishing/GHERKIN.md` through
+`agent_context/docs/sdoc/modules/rmet-publishing/GHERKIN.md` through
 `uv run agent_commons/agent_tools/scripts/gherkin.py compile module/rmet-publishing`.
